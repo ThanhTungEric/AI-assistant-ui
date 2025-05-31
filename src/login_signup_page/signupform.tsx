@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, TextField } from '@mui/material';
 import './login_signupform.css';
 import VGUFullLogo from '../assets/LOGO/loginlogo.png';
+import LoginFormGlobalStyle from '../globalstyle.tsx';
 
 interface SignupFormProps {
   switchToLogin: () => void;
@@ -58,12 +59,14 @@ export default function SignupForm({ switchToLogin }: SignupFormProps) {
   };
 
   return (
-    <div className='container'>
-      <form onSubmit={handleSubmit}>
-        <div className='header'>
-          <Box component="img" src={VGUFullLogo} alt="VGU Logo" className="logoVGU" />
-          <div className='text'>Register an Account</div>
-        </div>
+    <>
+        <LoginFormGlobalStyle />
+        <div className='container'>
+          <form onSubmit={handleSubmit}>
+            <div className='header'>
+              <Box component="img" src={VGUFullLogo} alt="VGU Logo" className="logoVGU" />
+              <div className='text'>Register an Account</div>
+            </div>
 
         <div className='input'>
           <TextField
@@ -145,5 +148,6 @@ export default function SignupForm({ switchToLogin }: SignupFormProps) {
         </div>
       </form>
     </div>
-  );
+    </>
+  )
 }

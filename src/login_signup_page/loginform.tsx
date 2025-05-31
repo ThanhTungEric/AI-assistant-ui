@@ -8,12 +8,17 @@ import './login_signupform.css'
 import VGUFullLogo from '../assets/LOGO/loginlogo.png'
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import InputAdornment from '@mui/material/InputAdornment';
+import LoginFormGlobalStyle from '../globalstyle.tsx';
+
+
 
 interface LoginFormProps {
   switchToSignup: () => void;
+  switchToLost: () => void
   }
 
-export default function LoginForm({ switchToSignup }: LoginFormProps) {
+
+export default function LoginForm({ switchToSignup, switchToLost }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
@@ -52,7 +57,8 @@ export default function LoginForm({ switchToSignup }: LoginFormProps) {
     }
   };
   return (
-    <>
+    <>          
+                <LoginFormGlobalStyle />
                 <div className='container'>
                   <form onSubmit={handleSubmit}>
                     <div className='header'>
@@ -93,7 +99,7 @@ export default function LoginForm({ switchToSignup }: LoginFormProps) {
                       <label>
                         <input type='checkbox' className="checkbox" />Remember me
                       </label>
-                      <a href='#' className='lostpassword'>Lost password?</a>
+                      <a href='#' className='lostpassword' onClick={(e) => { e.preventDefault(); switchToLost(); }}>Lost password?</a>
                     </div>
                     <div className='submit-container'>
                       <button type='submit' className='submit'>Login</button>
@@ -106,3 +112,4 @@ export default function LoginForm({ switchToSignup }: LoginFormProps) {
     </>
 );
 }
+

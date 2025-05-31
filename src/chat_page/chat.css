@@ -1,0 +1,52 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+.navbar{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  padding: 0 24px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.navbar img{
+    width: 400px;
+    cursor: pointer;
+}
+
+.left-navbar{
+  display: flex;
+  align-items: center;
+}
+
+.title{
+  font-weight: 700;
+  color: #666666;
+  font-size: 20px;
+}
+
+.user-content {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 32px !important;
+  height: 32px !important;
+  background-color: #005F61 !important;
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+.username {
+  margin-right: 4px;
+  font-weight: 500;
+  color: black;
+}
