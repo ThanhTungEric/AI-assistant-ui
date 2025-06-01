@@ -9,20 +9,20 @@ interface SignupFormProps {
 }
 
 export default function SignupForm({ switchToLogin }: SignupFormProps) {
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [errors, setErrors] = useState<{
-    email?: string;
-    username?: string;
-    password?: string;
-    confirmPassword?: string;
+    email?: string
+    username?: string
+    password?: string
+    confirmPassword?: string
   }>({});
 
   const validate = () => {
-    const newErrors: typeof errors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const newErrors: typeof errors = {}
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
     if (!email.trim()) {
       newErrors.email = 'Email is required';
@@ -31,30 +31,30 @@ export default function SignupForm({ switchToLogin }: SignupFormProps) {
     }
 
     if (!username.trim()) {
-      newErrors.username = 'Username is required';
+      newErrors.username = 'Username is required'
     }
 
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Password is required'
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Password must be at least 6 characters'
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please re-enter your password';
+      newErrors.confirmPassword = 'Please re-enter your password'
     } else if (confirmPassword !== password) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = 'Passwords do not match'
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      alert('Registered successfully!');
-      console.log({ email, username, password });
+      alert('Registered successfully!')
+      console.log({ email, username, password })
     }
   };
 
@@ -76,7 +76,7 @@ export default function SignupForm({ switchToLogin }: SignupFormProps) {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              if (errors.email) setErrors(prev => ({ ...prev, email: undefined }));
+              if (errors.email) setErrors(prev => ({ ...prev, email: undefined }))
             }}
             error={!!errors.email}
             helperText={errors.email}
@@ -92,7 +92,7 @@ export default function SignupForm({ switchToLogin }: SignupFormProps) {
             value={username}
             onChange={(e) => {
               setUsername(e.target.value);
-              if (errors.username) setErrors(prev => ({ ...prev, username: undefined }));
+              if (errors.username) setErrors(prev => ({ ...prev, username: undefined }))
             }}
             error={!!errors.username}
             helperText={errors.username}
@@ -109,7 +109,7 @@ export default function SignupForm({ switchToLogin }: SignupFormProps) {
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
-              if (errors.password) setErrors(prev => ({ ...prev, password: undefined }));
+              if (errors.password) setErrors(prev => ({ ...prev, password: undefined }))
             }}
             error={!!errors.password}
             helperText={errors.password}
@@ -126,7 +126,7 @@ export default function SignupForm({ switchToLogin }: SignupFormProps) {
             value={confirmPassword}
             onChange={(e) => {
               setConfirmPassword(e.target.value);
-              if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: undefined }));
+              if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: undefined }))
             }}
             error={!!errors.confirmPassword}
             helperText={errors.confirmPassword}

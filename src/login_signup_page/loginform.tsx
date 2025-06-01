@@ -13,12 +13,13 @@ import LoginFormGlobalStyle from '../globalstyle.tsx';
 
 
 interface LoginFormProps {
-  switchToSignup: () => void;
+  switchToSignup: () => void
   switchToLost: () => void
+  switchToChatPage: () => void
   }
 
 
-export default function LoginForm({ switchToSignup, switchToLost }: LoginFormProps) {
+export default function LoginForm({ switchToSignup, switchToLost, switchToChatPage }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
@@ -28,24 +29,24 @@ export default function LoginForm({ switchToSignup, switchToLost }: LoginFormPro
 
 
   const validate = () => {
-    const newErrors: {username?: string; password?: string} = {};
-    if (!username.trim()) newErrors.username = 'Username is required';
-    if (!password) newErrors.password = 'Password is required';
+    const newErrors: {username?: string; password?: string} = {}
+    if (!username.trim()) newErrors.username = 'Username is required'
+    if (!password) newErrors.password = 'Password is required'
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0
   };
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
     if (errors.username) {
-      setErrors((prev) => ({...prev, username: undefined}));
+      setErrors((prev) => ({...prev, username: undefined}))
     }
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
     if (errors.password) {
-      setErrors((prev) => ({...prev, password: undefined}));
+      setErrors((prev) => ({...prev, password: undefined}))
     }
   };
 
@@ -54,6 +55,7 @@ export default function LoginForm({ switchToSignup, switchToLost }: LoginFormPro
     if (validate()) {
       alert("Login successfully!!!")
       console.log({username, password});
+      switchToChatPage()
     }
   };
   return (
@@ -102,7 +104,7 @@ export default function LoginForm({ switchToSignup, switchToLost }: LoginFormPro
                       <a href='#' className='lostpassword' onClick={(e) => { e.preventDefault(); switchToLost(); }}>Lost password?</a>
                     </div>
                     <div className='submit-container'>
-                      <button type='submit' className='submit'>Login</button>
+                      <button type='submit' className='submit' onClick={(e) => { e.preventDefault(); handleSubmit(e);}}>Login</button>
                     </div>
                     <div className='register'>
                       <p>Don't have an account? <a href='#' onClick={(e) => { e.preventDefault(); switchToSignup(); }}>Register</a></p>
