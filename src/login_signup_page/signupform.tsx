@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
 import { Box, TextField } from '@mui/material';
-import './login_signupform.css';
+import React, { useState } from 'react';
+import { register } from '../api/api.ts';
 import VGUFullLogo from '../assets/LOGO/loginlogo.png';
 import LoginFormGlobalStyle from '../globalstyle.tsx';
+import './login_signupform.css';
 
 interface SignupFormProps {
   switchToLogin: () => void;
@@ -50,13 +51,19 @@ export default function SignupForm({ switchToLogin }: SignupFormProps) {
     return Object.keys(newErrors).length === 0
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validate()) {
-      alert('Registered successfully!')
-      console.log({ email, username, password })
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (validate()) {
+    try {
+      const response = await register(email, username, password);
+      alert('Registered successfully!');
+      console.log(response);
+    } catch (error) {
+      console.error('Registration failed:', error);
+      alert('Registration failed, please try again.');
     }
-  };
+  }
+};
 
   return (
     <>

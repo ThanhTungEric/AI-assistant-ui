@@ -1,20 +1,22 @@
-import { useEffect,useRef, useState } from 'react';
-import './chat.css';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import Mainpageglobalstyle from './globalstyle_mainpage';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import EditIcon from '@mui/icons-material/Edit';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { IconButton } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
+import './chat.css';
+import Mainpageglobalstyle from './globalstyle_mainpage';
+// createMessage API
+import { createMessage } from '../api/api';
 
-
-interface ChatPageprops{
-  switchToLogin: () => void
+interface ChatPageProps{
+  switchToLogin: () => void;
+  userName: string;
 }
 
-export default function ChatPage({ switchToLogin }: ChatPageprops) {
+export default function ChatPage({ switchToLogin, userName }: ChatPageProps) {
   const [showMenu, setShowMenu] = useState(false);
 
   const handleSettings = () => {
@@ -29,34 +31,50 @@ export default function ChatPage({ switchToLogin }: ChatPageprops) {
   interface Message {
     sender: 'user' | 'bot';
     text: string;
+    createdAt?: string;
   }
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = () => {
-  if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim()) return;
+    const now = new Date().toISOString();
 
-  const userMessage: Message = { sender: 'user', text: input };
-  const typingMessage: Message = { sender: 'bot', text: 'Assistant is typing' };
+    const userMessage: Message = { sender: 'user', text: input, createdAt: now };
+    const typingMessage: Message = { sender: 'bot', text: 'Assistant is typing' };
 
-  setMessages((prev) => [...prev, userMessage, typingMessage]);
-  setInput('');
+    setMessages((prev) => [...prev, userMessage, typingMessage]);
+    setInput('');
 
-  setTimeout(() => {
-    const botMessage: Message = {
-      sender: 'bot',
-      text: 'Hallo, ich komme von der Vietnam-Deutschland-Universität. Ich unterstütze Sie bei Ihrer Zulassung.',
-    };
+  try {
+    await createMessage(1, input, 'user');
+    setTimeout(() => {
+      const botMessage: Message = {
+        sender: 'bot',
+        text: 'Hallo, ich komme von der Vietnam-Deutschland-Universität. Ich unterstütze Sie bei Ihrer Zulassung.',
+      };
 
-    setMessages((prev) => {
-      const updated = [...prev];
-      updated[updated.length - 1] = botMessage; 
-      return updated;
-    });
-  }, 2000);
-};
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = botMessage;
+        return updated;
+      });
+    }, 2000);
+
+    } catch (error) {
+      console.error('❌ Failed to send message:', error);
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          sender: 'bot',
+          text: 'Fehler beim Senden der Nachricht. Bitte versuchen Sie es erneut.',
+        };
+        return updated;
+      });
+    }
+  };
 
   useEffect(() => {
   if (messagesEndRef.current) {
@@ -79,7 +97,7 @@ export default function ChatPage({ switchToLogin }: ChatPageprops) {
             className="user-content"
             onClick={() => setShowMenu(!showMenu)}
           >
-            Trần Nguyễn Lâm
+            {userName}
             <ArrowDropDownIcon />
           </button>
 
@@ -130,6 +148,11 @@ export default function ChatPage({ switchToLogin }: ChatPageprops) {
                 </div>
                 <div className={`bubble ${msg.text.includes('typing') ? 'typing' : ''}`}>
                   {msg.text}
+                  {msg.createdAt && (
+                      <div className="timestamp">
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                  )}
                   {msg.sender === 'bot' && !msg.text.includes('typing') && (
                   <div className="chat-actions">
                     <ThumbUpIcon fontSize="small" />
