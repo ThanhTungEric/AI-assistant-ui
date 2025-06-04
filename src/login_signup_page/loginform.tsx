@@ -55,7 +55,7 @@ export default function LoginForm({ switchToSignup, switchToLost, switchToChatPa
     try {
       const data = await login(username, password);
       console.log('Logged in:', data);
-      switchToChatPage(username);
+      switchToChatPage(data.user.username);
     } catch (error) {
       console.error('❌ Login error:', error);
       setErrors({ password: 'Network or server error' });

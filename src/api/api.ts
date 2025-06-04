@@ -8,7 +8,11 @@ export interface User {
 
 export interface LoginResponse {
     message: string;
-    user: User;
+    user: {
+        id: number;
+        username: string;
+        email: string;
+    }
 }
 
 export interface LogoutResponse {
@@ -31,12 +35,17 @@ export interface CreateMessageResponse {
     message: Message;
 }
 
+export interface ForgotPassword {
+    message: string,
+    user: User
+}
+
 async function request(path: string, options: RequestInit = {}) {
     const res = await fetch(`${BASE_URL}${path}`, {
         ...options,
         headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {}),
+            'Content-Type': 'application/json',
+            ...(options.headers || {}),
         },
         credentials: 'include',
     });
@@ -45,7 +54,8 @@ async function request(path: string, options: RequestInit = {}) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || 'API request failed');
     }
-    return res.json();
+    const text = await res.text()
+    return text ? JSON.parse(text) : {};
 }
 
 // login API
@@ -73,9 +83,17 @@ export async function createMessage(topicId: number, content: string, sender: 'u
 
 // register API
 export async function register(email: string, username: string, password: string): Promise<RegisterResponse> {
-    return request('/users/auth/signup', {
+    return request('/users/auth', {
         method: 'POST',
         body: JSON.stringify({ email, username, password }),
+    });
+}
+
+// forgot password
+export async function forgotPassword(email: string): Promise<ForgotPassword> {
+    return request('/users/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email })
     });
 }
 
