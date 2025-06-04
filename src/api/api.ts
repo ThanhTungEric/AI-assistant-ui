@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:3000'
+const BASE_URL = 'http://localhost:3000/api'
 
 export interface User {
     id: number;
@@ -73,7 +73,7 @@ export async function createMessage(topicId: number, content: string, sender: 'u
 
 // register API
 export async function register(email: string, username: string, password: string): Promise<RegisterResponse> {
-    return request('/users/auth/register', {
+    return request('/users/auth/signup', {
         method: 'POST',
         body: JSON.stringify({ email, username, password }),
     });
