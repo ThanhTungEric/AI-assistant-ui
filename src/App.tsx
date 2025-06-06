@@ -8,7 +8,7 @@ function App() {
       <Routes>
         <Route path="/" element={<ChatPage userName="" />} />
         <Route path="/login" element={<AuthPage />} />
-        </Routes>
+      </Routes>
     </div>
   )
 }

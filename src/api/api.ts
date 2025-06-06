@@ -58,7 +58,8 @@ api.interceptors.response.use(
     response => response,
     error => {
         if (error.response?.status === 401 && typeof window !== 'undefined') {
-        console.warn('Session expired. Redirecting to login.');
+        console.warn('Session expired.');
+        alert('Your session has expired. Please log in again.');
         window.location.href = '/login';
         }
         return Promise.reject(error);
@@ -99,3 +100,5 @@ export async function register(email: string, username: string, password: string
 export async function forgotPassword(email: string): Promise<ForgotPassword> {
     return request<ForgotPassword>('/users/auth/forgot-password', 'POST', { email });
 }
+
+
