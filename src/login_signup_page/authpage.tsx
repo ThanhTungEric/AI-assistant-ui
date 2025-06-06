@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { logout } from '../api/api.ts'
 import ChatPage from '../chat_page/chat.tsx'
 import LoginForm from './loginform.tsx'
 import LostPasswordForm from './lost_password.tsx'
@@ -16,20 +15,10 @@ export default function AuthPage() {
     setIsAuthenticated(true);
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setIsAuthenticated(false);
-      setIsLogin(true);
-      setIsLostPassword(false);
-    } catch (error) {
-        console.error('Logout failed: ', error)
-    }
-  };
-
   if (isAuthenticated) {
-    return <ChatPage switchToLogin={handleLogout} userName={userName}/>;
+    return <ChatPage userName={userName}></ChatPage>
   }
+  
   return (
   <div>
     {isLostPassword ? (

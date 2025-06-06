@@ -1,4 +1,6 @@
-const BASE_URL = 'http://localhost:3000/api'
+import axios from 'axios';
+
+const BASE_URL = 'http://localhost:3000';
 
 export interface User {
     id: number;
@@ -8,11 +10,13 @@ export interface User {
 
 export interface LoginResponse {
     message: string;
-    user: {
+    session: {
+        user: {
         id: number;
         username: string;
         email: string;
-    }
+        };
+    };
 }
 
 export interface LogoutResponse {
@@ -36,64 +40,62 @@ export interface CreateMessageResponse {
 }
 
 export interface ForgotPassword {
-    message: string,
-    user: User
+    message: string;
+    user: User;
 }
 
-async function request(path: string, options: RequestInit = {}) {
-    const res = await fetch(`${BASE_URL}${path}`, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...(options.headers || {}),
-        },
-        credentials: 'include',
-    });
+// Axios instance
+const api = axios.create({
+    baseURL: BASE_URL,
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
 
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || 'API request failed');
+// Auto-redirect on 401
+api.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response?.status === 401 && typeof window !== 'undefined') {
+        console.warn('Session expired. Redirecting to login.');
+        window.location.href = '/login';
+        }
+        return Promise.reject(error);
     }
-    const text = await res.text()
-    return text ? JSON.parse(text) : {};
+);
+
+// Generic request function using Axios
+async function request<T>(path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', data?: data): Promise<T> {
+    const response = await api({
+        url: path,
+        method,
+        data,
+    });
+    return response.data;
 }
 
-// login API
+// Login
 export async function login(login: string, password: string): Promise<LoginResponse> {
-    return request('/users/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ login, password }),
-    });
+    return request<LoginResponse>('/users/auth/login', 'POST', { login, password });
 }
 
-// logout API
+// Logout
 export async function logout(): Promise<LogoutResponse> {
-    return request('/users/auth/logout', {
-        method: 'POST',
-    });
+    return request<LogoutResponse>('/users/auth/logout', 'POST');
 }
 
-// createMessage (chat) API
+// Create Message (Chat)
 export async function createMessage(topicId: number, content: string, sender: 'user' | 'ai'): Promise<CreateMessageResponse> {
-    return request('/users/message', {
-        method: 'POST',
-        body: JSON.stringify({ topicId, content, sender }),
-    });
+    return request<CreateMessageResponse>('/users/message', 'POST', { topicId, content, sender });
 }
 
-// register API
+// Register
 export async function register(email: string, username: string, password: string): Promise<RegisterResponse> {
-    return request('/users/auth', {
-        method: 'POST',
-        body: JSON.stringify({ email, username, password }),
-    });
+    return request<RegisterResponse>('/users/auth', 'POST', { email, username, password });
 }
 
-// forgot password
+// Forgot Password
 export async function forgotPassword(email: string): Promise<ForgotPassword> {
-    return request('/users/auth/forgot-password', {
-        method: 'POST',
-        body: JSON.stringify({ email })
-    });
+    return request<ForgotPassword>('/users/auth/forgot-password', 'POST', { email });
 }
-

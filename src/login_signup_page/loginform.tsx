@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import VGUFullLogo from '../assets/LOGO/loginlogo.png';
 import LoginFormGlobalStyle from '../globalstyle.tsx';
 import './login_signupform.css';
-// login API
+// API
 import { login } from '../api/api.ts';
 
 
@@ -17,7 +17,7 @@ interface LoginFormProps {
   switchToSignup: () => void
   switchToLost: () => void
   switchToChatPage: (name: string) => void
-  }
+}
 
 
 export default function LoginForm({ switchToSignup, switchToLost, switchToChatPage }: LoginFormProps) {
@@ -55,9 +55,9 @@ export default function LoginForm({ switchToSignup, switchToLost, switchToChatPa
     try {
       const data = await login(username, password);
       console.log('Logged in:', data);
-      switchToChatPage(data.user.username);
+      switchToChatPage(data.session.user.username);
     } catch (error) {
-      console.error('❌ Login error:', error);
+      console.error('Login error:', error);
       setErrors({ password: 'Network or server error' });
     }
   };

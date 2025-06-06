@@ -6,26 +6,38 @@ import FileCopyIcon from '@mui/icons-material/FileCopy';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { IconButton } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './chat.css';
 import Mainpageglobalstyle from './globalstyle_mainpage';
-// createMessage API
-import { createMessage } from '../api/api';
+// API
+import { createMessage, logout } from '../api/api';
 
 interface ChatPageProps{
-  switchToLogin: () => void;
   userName: string;
 }
 
-export default function ChatPage({ switchToLogin, userName }: ChatPageProps) {
+export default function ChatPage({ userName }: ChatPageProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    // If userName is missing or empty, redirect to login page
+    if (!userName || userName.trim() === '') {
+      navigate('/login');
+    }
+  }, [userName, navigate]);
 
   const handleSettings = () => {
     alert('Go to Settings');
   };
 
-  const handleLogout = () => {
-    alert('You are logged out');
-    switchToLogin()
+  const handleLogout = async () => {
+    navigate('/', { replace: true });
+    try {
+      await logout();
+    } catch (error) {
+        console.error('Logout failed: ', error)
+    }
   };
 
   interface Message {
@@ -173,8 +185,8 @@ export default function ChatPage({ switchToLogin, userName }: ChatPageProps) {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault(); 
-                  handleSend();       
+                  e.preventDefault();
+                  handleSend();
                 }
               }}
               className="chat-textarea"
