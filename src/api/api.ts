@@ -66,7 +66,7 @@ api.interceptors.response.use(
 );
 
 // Generic request function using Axios
-async function request<T>(path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', data?: data): Promise<T> {
+async function request<T>(path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', data?: any): Promise<T> {
     const response = await api({
         url: path,
         method,
