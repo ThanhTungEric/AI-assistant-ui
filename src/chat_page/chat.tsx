@@ -6,26 +6,25 @@ import FileCopyIcon from '@mui/icons-material/FileCopy';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { IconButton } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './chat.css';
 import Mainpageglobalstyle from './globalstyle_mainpage';
 // API
 import { createMessage, logout } from '../api/api';
 
-interface ChatPageProps{
-  userName: string;
-}
 
-export default function ChatPage({ userName }: ChatPageProps) {
+
+export default function ChatPage() {
   const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate()
+  const {username} = useParams()
 
   useEffect(() => {
     // If userName is missing or empty, redirect to login page
-    if (!userName || userName.trim() === '') {
+    if (!username || username.trim() === '') {
       navigate('/login');
     }
-  }, [userName, navigate]);
+  }, [username, navigate]);
 
   const handleSettings = () => {
     alert('Go to Settings');
@@ -109,7 +108,7 @@ export default function ChatPage({ userName }: ChatPageProps) {
             className="user-content"
             onClick={() => setShowMenu(!showMenu)}
           >
-            {userName}
+            {username}
             <ArrowDropDownIcon />
           </button>
 

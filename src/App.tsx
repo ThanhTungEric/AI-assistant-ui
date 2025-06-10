@@ -7,7 +7,7 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path="/chat" element={<ChatPage userName="" />} />
+        <Route path="/chat/:username" element={<ChatPage />} />
         <Route path="/login" element={<AuthPage />} />
         <Route path="/reset-password" element={<ResetPasswordForm />} />
       </Routes>

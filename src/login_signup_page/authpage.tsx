@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import ChatPage from '../chat_page/chat.tsx'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import LoginForm from './loginform.tsx'
 import LostPasswordForm from './lost_password.tsx'
 import SignupForm from './signupform.tsx'
@@ -10,14 +10,18 @@ export default function AuthPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState('');
 
+  const navigate = useNavigate()
+
   const handleLoginSuccess = (name: string) => {
     setUserName(name)
     setIsAuthenticated(true);
   };
 
-  if (isAuthenticated) {
-    return <ChatPage userName={userName}></ChatPage>
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(`/chat/${userName}`);
+    }
+  }, [isAuthenticated, userName]);
   
   return (
   <div>
