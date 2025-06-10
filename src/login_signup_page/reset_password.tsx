@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import VGUFullLogo from '../assets/LOGO/loginlogo.png';
 import LoginFormGlobalStyle from '../globalstyle.tsx';
 import './login_signupform.css';
-import { login } from '../api/api.ts';
 
+import { login, resetPassword } from '../api/api.ts';
 
 export default function ResetPasswordForm() {
     const [email, setEmail] = useState('');
@@ -59,6 +59,7 @@ export default function ResetPasswordForm() {
         if (!validate()) return;
 
         try {
+            await resetPassword(email, tempPassword, password);
             console.log('Password reset successfully');
             const data = await login(email, password)
             navigate(`/chat/${data.session.user.username}`);
@@ -72,17 +73,15 @@ export default function ResetPasswordForm() {
         <>
             <LoginFormGlobalStyle />
             <div className='container'>
-                <form onSubmit={handleSubmit}>
+                <form>
                     <div className='header'>
                         <Box component="img" src={VGUFullLogo} alt="VGU Logo" className="logoVGU" />
                         <div className='text'>Reset Password</div>
                     </div>
 
                     <a
-                        href='#'
                         onClick={(e) => {
                             e.preventDefault();
-                            console.log('hi')
                             navigate('/login')
                         }}
                         className='back'
@@ -160,10 +159,8 @@ export default function ResetPasswordForm() {
                     </div>
 
                     <div className='submit-container'>
-                        <button type='submit' className='submit'>Confirm</button>
+                        <button onClick={handleSubmit}  className='submit'>Confirm</button>
                     </div>
-
-                    
                 </form>
             </div>
         </>

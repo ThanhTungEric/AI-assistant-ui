@@ -54,17 +54,17 @@ const api = axios.create({
 });
 
 // Auto-redirect on 401
-api.interceptors.response.use(
-    response => response,
-    error => {
-        if (error.response?.status === 401 && typeof window !== 'undefined') {
-        console.warn('Session expired.');
-        alert('Your session has expired. Please log in again.');
-        window.location.href = '/login';
-        }
-        return Promise.reject(error);
-    }
-);
+// api.interceptors.response.use(
+//     response => response,
+//     error => {
+//         if (error.response?.status === 401 && typeof window !== 'undefined') {
+//         console.warn('Session expired.');
+//         alert('Your session has expired. Please log in again.');
+//         window.location.href = '/login';
+//         }
+//         return Promise.reject(error);
+//     }
+// );
 
 // Generic request function using Axios
 async function request<T>(path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', data?: any): Promise<T> {
@@ -113,4 +113,8 @@ export async function forgotPassword(email: string): Promise<ForgotPassword> {
     return request<ForgotPassword>('/users/auth/forgot-password', 'POST', { email });
 }
 
+// Reset Password
+export async function resetPassword(email: string, temporaryPassword: string, newPassword: string) {
+    return request('/users/auth/reset-password', 'POST', { email, temporaryPassword, newPassword });
+}
 

@@ -5,8 +5,8 @@ import LostPasswordForm from './lost_password.tsx'
 import SignupForm from './signupform.tsx'
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [isLostPassword, setIsLostPassword] = useState(false);
+  const [isLogin] = useState(true);
+  const [isLostPassword] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState('');
 
