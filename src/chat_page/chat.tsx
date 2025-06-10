@@ -12,7 +12,7 @@ import Mainpageglobalstyle from './globalstyle_mainpage';
 // API
 import { createMessage, logout } from '../api/api';
 
-
+import VGULogo from '../assets/LOGO/loginlogo.png';
 
 export default function ChatPage() {
   const [showMenu, setShowMenu] = useState(false);
@@ -31,7 +31,7 @@ export default function ChatPage() {
   };
 
   const handleLogout = async () => {
-    navigate('/', { replace: true });
+    navigate('/login', { replace: true });
     try {
       await logout();
     } catch (error) {
@@ -99,7 +99,7 @@ export default function ChatPage() {
       <Mainpageglobalstyle />
       <div className="navbar">
         <div className="left-navbar">
-          <img src="./src/assets/LOGO/loginlogo.png" alt="" className="Logo" />
+          <img src={VGULogo} alt="" className="Logo" />
           <div className="title">VGU Chatbot</div>
         </div>
         <div className="user-menu">

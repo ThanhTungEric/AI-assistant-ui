@@ -5,11 +5,7 @@ import VGUFullLogo from '../assets/LOGO/loginlogo.png';
 import LoginFormGlobalStyle from '../globalstyle.tsx';
 import './login_signupform.css';
 
-interface SignupFormProps {
-  switchToLogin: () => void;
-}
-
-export default function SignupForm({ switchToLogin }: SignupFormProps) {
+export default function SignupForm() {
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -148,7 +144,7 @@ export default function SignupForm({ switchToLogin }: SignupFormProps) {
         <div className='register'>
           <p>
             Already have an account?{' '}
-            <a href='#' onClick={(e) => { e.preventDefault(); switchToLogin(); }}>
+            <a href='#'>
               Login
             </a>
           </p>

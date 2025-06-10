@@ -26,15 +26,13 @@ export default function AuthPage() {
   return (
   <div>
     {isLostPassword ? (
-      <LostPasswordForm switchToLogin={() => setIsLostPassword(false)} />
+      <LostPasswordForm />
     ) : isLogin ? (
       <LoginForm
-        switchToSignup={() => setIsLogin(false)}
-        switchToLost={() => setIsLostPassword(true)}
         switchToChatPage={handleLoginSuccess}
       />
     ) : (
-      <SignupForm switchToLogin={() => setIsLogin(true)} />
+      <SignupForm />
     )}
   </div>
 );

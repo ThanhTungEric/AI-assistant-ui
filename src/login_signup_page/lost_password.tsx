@@ -11,27 +11,23 @@ import LoginFormGlobalStyle from '../globalstyle.tsx';
 import './login_signupform.css';
 
 
-interface LostPasswordFormProps {
-  switchToLogin: () => void;
-}
-
-export default function LostPasswordForm({ switchToLogin }: LostPasswordFormProps) {
-  const [username, setUsername] = useState<string>('');
-  const [errors, setErrors] = useState<{ username?: string }>({});
+export default function LostPasswordForm() {
+  const [email, setEmail] = useState('');
+  const [errors, setErrors] = useState<{ email?: string }>({});
 
   const navigate = useNavigate()
 
   const validate = () => {
-    const newErrors: { username?: string } = {};
-    if (!username.trim()) newErrors.username = 'You must input this field';
+    const newErrors: { email?: string } = {};
+    if (!email.trim()) newErrors.email = 'You must input this field';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-    if (errors.username) {
-      setErrors((prev) => ({ ...prev, username: undefined }));
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (errors.email) {
+      setErrors((prev) => ({ ...prev, email: undefined }));
     }
   };
 
@@ -40,7 +36,7 @@ export default function LostPasswordForm({ switchToLogin }: LostPasswordFormProp
     if (!validate()) return;
 
     try {
-      await forgotPassword(username);
+      await forgotPassword(email);
       alert('A password reset link has been sent to your email!');
       navigate('/reset-password');
     } catch (error: any) {
@@ -61,10 +57,9 @@ export default function LostPasswordForm({ switchToLogin }: LostPasswordFormProp
           </div>
 
           <a
-          href='#'
           onClick={(e) => {
             e.preventDefault();
-            switchToLogin();
+            navigate('/login')
           }}
           className='back'
         >
@@ -75,12 +70,12 @@ export default function LostPasswordForm({ switchToLogin }: LostPasswordFormProp
           <div className='input'>
             <TextField
               className="input_field"
-              label="Enter username or email"
+              label="Enter email"
               variant="outlined"
-              value={username}
-              onChange={handleUsernameChange}
-              error={!!errors.username}
-              helperText={errors.username}
+              onChange={handleEmailChange}
+              value={email}
+              error={!!errors.email}
+              helperText={errors.email}
               fullWidth
             />
           </div>

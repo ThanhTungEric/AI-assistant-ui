@@ -12,6 +12,10 @@
     margin-bottom: 5%;
 }
 
+.lostpassword {
+    cursor: pointer;
+}
+
 .logoVGU{
     width: 100%;
 }
@@ -127,29 +131,29 @@
 }
 
 .back {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #c24e00;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease, transform 0.3s ease;
-  margin-top: 5px;
-  margin-left: 60px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #c24e00;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease, transform 0.3s ease;
+    margin-top: 5px;
+    margin-left: 60px;
+    cursor: pointer;
 }
 
 .back:hover {
-  color: #793000;
-  transform: translateX(-3px); 
+    color: #793000;
+    transform: translateX(-3px);
 }
 
 .icon-button {
-  transition: color 0.3s ease, transform 0.3s ease;
+    transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .back:hover .icon-button {
-  color: #793000;
-  transform: translateX(-2px);
+    color: #793000;
+    transform: translateX(-2px);
 }
-
 

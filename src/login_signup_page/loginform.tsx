@@ -10,21 +10,22 @@ import VGUFullLogo from '../assets/LOGO/loginlogo.png';
 import LoginFormGlobalStyle from '../globalstyle.tsx';
 import './login_signupform.css';
 // API
+import { useNavigate } from 'react-router-dom';
 import { login } from '../api/api.ts';
 
 
 interface LoginFormProps {
-  switchToSignup: () => void
-  switchToLost: () => void
   switchToChatPage: (name: string) => void
 }
 
 
-export default function LoginForm({ switchToSignup, switchToLost, switchToChatPage }: LoginFormProps) {
+export default function LoginForm({ switchToChatPage }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const [errors, setErrors] = useState<{username?: string; password?: string}>({})
+
+  const navigate = useNavigate()
   
   const validate = () => {
     const newErrors: {username?: string; password?: string} = {}
@@ -62,6 +63,13 @@ export default function LoginForm({ switchToSignup, switchToLost, switchToChatPa
     }
   };
 
+  const handleLostPassword = () => {
+    navigate('/lost-password')
+  }
+  const handleRegister = () => {
+    navigate('/register')
+  }
+
   return (
     <>
         <LoginFormGlobalStyle />
@@ -72,7 +80,7 @@ export default function LoginForm({ switchToSignup, switchToLost, switchToChatPa
               <div className='text'>Login to VGU</div>
             </div>
             <div className='input'>
-              <TextField className="input_field" label="Username" variant="outlined" 
+              <TextField className="input_field" label="Username" variant="outlined"
                 value={username}
                 onChange={handleUsernameChange}
                 error={!!errors.username}
@@ -105,13 +113,13 @@ export default function LoginForm({ switchToSignup, switchToLost, switchToChatPa
               <label>
                 <input type='checkbox' className="checkbox" />Remember me
               </label>
-              <a href='#' className='lostpassword' onClick={(e) => { e.preventDefault(); switchToLost(); }}>Lost password?</a>
+              <a className='lostpassword' onClick={handleLostPassword}>Lost password?</a>
             </div>
             <div className='submit-container'>
               <button type='submit' className='submit' onClick={(e) => { e.preventDefault(); handleSubmit(e);}}>Login</button>
             </div>
             <div className='register'>
-              <p>Don't have an account? <a href='#' onClick={(e) => { e.preventDefault(); switchToSignup(); }}>Register</a></p>
+              <p>Don't have an account? <a onClick={handleRegister}>Register</a></p>
             </div>
           </form>
         </div>
