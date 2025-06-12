@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { forgotPassword } from '../api/api.ts';
 import VGUFullLogo from '../assets/LOGO/loginlogo.png';
 import LoginFormGlobalStyle from '../globalstyle.tsx';
+import { handleErrors } from '../utils/handleErrors.tsx';
 import './login_signupform.css';
 
 
@@ -40,8 +41,7 @@ export default function LostPasswordForm() {
       alert('A password reset link has been sent to your email!');
       navigate('/reset-password');
     } catch (error: any) {
-      console.error('Reset request failed:', error.message);
-      alert('Error: ' + error.message);
+        handleErrors(error, 'forgot')
     }
   };
 

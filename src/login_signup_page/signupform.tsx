@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { register } from '../api/api.ts';
 import VGUFullLogo from '../assets/LOGO/loginlogo.png';
 import LoginFormGlobalStyle from '../globalstyle.tsx';
+import { handleErrors } from '../utils/handleErrors.tsx';
 import './login_signupform.css';
 
 export default function SignupForm() {
@@ -55,8 +56,7 @@ export default function SignupForm() {
       alert('Registered successfully!');
       console.log(response);
     } catch (error) {
-      console.error('Registration failed:', error);
-      alert('Registration failed, please try again.');
+        handleErrors(error, 'register')
     }
   }
 };

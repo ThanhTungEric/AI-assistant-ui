@@ -13,6 +13,7 @@ import Mainpageglobalstyle from './globalstyle_mainpage';
 import { createMessage, logout } from '../api/api';
 
 import VGULogo from '../assets/LOGO/loginlogo.png';
+import { handleErrors } from '../utils/handleErrors';
 
 export default function ChatPage() {
   const [showMenu, setShowMenu] = useState(false);
@@ -75,7 +76,7 @@ export default function ChatPage() {
     }, 2000);
 
     } catch (error) {
-      console.error('❌ Failed to send message:', error);
+      handleErrors(error, 'message')
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = {

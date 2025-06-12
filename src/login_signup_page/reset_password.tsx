@@ -7,6 +7,7 @@ import LoginFormGlobalStyle from '../globalstyle.tsx';
 import './login_signupform.css';
 
 import { login, resetPassword } from '../api/api.ts';
+import { handleErrors } from '../utils/handleErrors.tsx';
 
 export default function ResetPasswordForm() {
     const [email, setEmail] = useState('');
@@ -63,9 +64,8 @@ export default function ResetPasswordForm() {
             console.log('Password reset successfully');
             const data = await login(email, password)
             navigate(`/chat/${data.session.user.username}`);
-        } catch (error: any) {
-            console.error('Reset failed:', error.message);
-            // Show error message to user
+        } catch (error) {
+            handleErrors(error, 'reset')
         }
     };
 
