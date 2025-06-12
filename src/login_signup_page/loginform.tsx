@@ -12,14 +12,10 @@ import './login_signupform.css';
 // API
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api/api.ts';
+import { handleErrors } from '../utils/handleErrors.tsx';
 
 
-interface LoginFormProps {
-  switchToChatPage: (name: string) => void
-}
-
-
-export default function LoginForm({ switchToChatPage }: LoginFormProps) {
+export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
@@ -56,10 +52,9 @@ export default function LoginForm({ switchToChatPage }: LoginFormProps) {
     try {
       const data = await login(username, password);
       console.log('Logged in:', data);
-      switchToChatPage(data.session.user.username);
+      navigate(`/chat/${data.session.user.username}`)
     } catch (error) {
-      console.error('Login error:', error);
-      setErrors({ password: 'Network or server error' });
+        handleErrors(error, 'login')
     }
   };
 
