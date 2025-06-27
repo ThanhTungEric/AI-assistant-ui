@@ -2,7 +2,7 @@ import { Box, TextField } from '@mui/material';
 import React, { useState } from 'react';
 import { register } from '../api/api.ts';
 import VGUFullLogo from '../assets/LOGO/loginlogo.png';
-import LoginFormGlobalStyle from '../globalstyle.tsx';
+import { LoginFormGlobalStyle } from '../globalstyle.tsx';
 import { handleErrors } from '../utils/handleErrors.tsx';
 import './login_signupform.css';
 

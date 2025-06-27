@@ -1,13 +1,16 @@
 import { Route, Routes } from 'react-router-dom'
 import ChatPage from './chat_page/chat.tsx'
-import ResetPasswordForm from './login_signup_page/reset_password.tsx'
-import LostPasswordForm from './login_signup_page/lost_password.tsx'
-import SignupForm from './login_signup_page/signupform.tsx'
 import LoginForm from './login_signup_page/loginform.tsx'
+import LostPasswordForm from './login_signup_page/lost_password.tsx'
+import ResetPasswordForm from './login_signup_page/reset_password.tsx'
+import SignupForm from './login_signup_page/signupform.tsx'
+
+import { GlobalStyle } from './globalstyle.tsx'
 
 function App() {
   return (
     <div>
+      <GlobalStyle />
       <Routes>
         <Route path="/chat/:username" element={<ChatPage />} />
         <Route path="/login" element={<LoginForm />} />

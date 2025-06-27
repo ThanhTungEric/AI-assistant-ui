@@ -8,14 +8,16 @@ import { IconButton } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './chat.css';
-import Mainpageglobalstyle from './globalstyle_mainpage';
 // API
-import { createMessage, logout } from '../api/api';
+import { createMessage, fetchTopics, logout } from '../api/api';
 
-import VGULogo from '../assets/LOGO/loginlogo.png';
+import VGULogo from '../assets/LOGO/login_logo.png';
 import { handleErrors } from '../utils/handleErrors';
 
+import type { Message, Topic } from './interface/interface';
+
 export default function ChatPage() {
+  const [topics, setTopics] = useState<Topic[]>([]);
   const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate()
   const {username} = useParams()
@@ -26,6 +28,18 @@ export default function ChatPage() {
       navigate('/login');
     }
   }, [username, navigate]);
+
+  useEffect(() => {
+      const loadTopics = async () => {
+        try {
+          const data = await fetchTopics();
+          setTopics(data);
+        } catch (error) {
+          console.error('Failed to fetch topics:', error);
+        }
+      };
+      loadTopics();
+  }, []);
 
   const handleSettings = () => {
     alert('Go to Settings');
@@ -39,12 +53,6 @@ export default function ChatPage() {
         console.error('Logout failed: ', error)
     }
   };
-
-  interface Message {
-    sender: 'user' | 'bot';
-    text: string;
-    createdAt?: string;
-  }
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -66,6 +74,7 @@ export default function ChatPage() {
       const botMessage: Message = {
         sender: 'bot',
         text: 'Hallo, ich komme von der Vietnam-Deutschland-Universität. Ich unterstütze Sie bei Ihrer Zulassung.',
+        createdAt: new Date().toISOString()
       };
 
       setMessages((prev) => {
@@ -82,6 +91,7 @@ export default function ChatPage() {
         updated[updated.length - 1] = {
           sender: 'bot',
           text: 'Fehler beim Senden der Nachricht. Bitte versuchen Sie es erneut.',
+          createdAt: new Date().toLocaleString()
         };
         return updated;
       });
@@ -97,12 +107,9 @@ export default function ChatPage() {
 
   return (
     <>
-      <Mainpageglobalstyle />
       <div className="navbar">
-        <div className="left-navbar">
-          <img src={VGULogo} alt="" className="Logo" />
+          <img src={VGULogo} alt="" className="logo" />
           <div className="title">VGU Chatbot</div>
-        </div>
         <div className="user-menu">
           <button
             type="button"
@@ -126,13 +133,16 @@ export default function ChatPage() {
 
       <div className="chatbot-container">
         <div className="sidebar">
-          <h2>Chat history</h2>
-          <div className="history-item">
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-          </div>
-          <div className="history-item">
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-          </div>
+          <h2>Chats</h2>
+            {topics.map((topic) => (
+              <div key={topic.id} className="history-item">
+                {topic.title}
+              </div>
+            ))}
+
+            {topics.length === 0 && (
+              <div className="history-item">No topics yet.</div>
+            )}
         </div>
 
         <div className="chat-window">
@@ -146,6 +156,7 @@ export default function ChatPage() {
                     Hallo, ich komme von der Vietnam-Deutschland-Universität. Ich unterstütze Sie bei Ihrer Zulassung.
                     Hallo, ich komme von der Vietnam-Deutschland-Universität. Ich unterstütze Sie bei Ihrer Zulassung.
                     Hallo, ich komme von der Vietnam-Deutschland-Universität. Ich unterstütze Sie bei Ihrer Zulassung.
+                    
                     <div className='chat-actions'>
                       <ThumbUpIcon fontSize="small" />
                       <EditIcon fontSize="small" />
@@ -162,15 +173,15 @@ export default function ChatPage() {
                   {msg.text}
                   {msg.createdAt && (
                       <div className="timestamp">
-                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                       </div>
                   )}
                   {msg.sender === 'bot' && !msg.text.includes('typing') && (
-                  <div className="chat-actions">
-                    <ThumbUpIcon fontSize="small" />
-                    <EditIcon fontSize="small" />
-                    <FileCopyIcon fontSize="small" />
-                  </div>
+                      <div className="chat-actions">
+                        <ThumbUpIcon fontSize="small" />
+                        <EditIcon fontSize="small" />
+                        <FileCopyIcon fontSize="small" />
+                      </div>
                   )}
                 </div>
               </div>

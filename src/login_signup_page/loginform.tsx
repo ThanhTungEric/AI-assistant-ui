@@ -7,12 +7,13 @@ import {
 import InputAdornment from '@mui/material/InputAdornment';
 import React, { useState } from 'react';
 import VGUFullLogo from '../assets/LOGO/loginlogo.png';
-import LoginFormGlobalStyle from '../globalstyle.tsx';
+import { LoginFormGlobalStyle } from '../globalstyle.tsx';
 import './login_signupform.css';
 // API
-import { useNavigate } from 'react-router-dom';
 import { login } from '../api/api.ts';
+
 import { handleErrors } from '../utils/handleErrors.tsx';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function LoginForm() {
@@ -83,7 +84,7 @@ export default function LoginForm() {
                 fullWidth />
             </div>
             <div className='input'>
-              <TextField className="input_field" label="Password" type={showPassword ? 'text' : 'password'} 
+              <TextField className="input_field" label="Password" type={showPassword ? 'text' : 'password'}
               variant='outlined'
               value={password}
               onChange={handlePasswordChange}

@@ -118,3 +118,8 @@ export async function resetPassword(email: string, temporaryPassword: string, ne
     return request('/users/auth/reset-password', 'POST', { email, temporaryPassword, newPassword });
 }
 
+// Fetch Topics
+export async function fetchTopics(): Promise<{ id: number; title: string }[]> {
+    return request<{ id: number; title: string }[]>('/topics', 'GET');
+}
+
