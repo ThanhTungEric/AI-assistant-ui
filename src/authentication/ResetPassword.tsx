@@ -1,13 +1,17 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Box, TextField } from '@mui/material';
+import {
+    Box,
+    TextField,
+    CircularProgress,
+} from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VGUFullLogo from '../assets/LOGO/loginlogo.png';
 import LoginFormGlobalStyle from '../globalstyle.tsx';
 import './login_signupform.css';
 
-import { login, resetPassword } from '../api/api.ts';
-import { handleErrors } from '../utils/handleErrors.tsx';
+import { usePasswordReset } from '@hooks/user/usePasswordReset';
+import AlertDialog from '@components/AlertDialog.tsx';
 
 export default function ResetPasswordForm() {
     const [email, setEmail] = useState('');
@@ -20,8 +24,11 @@ export default function ResetPasswordForm() {
         password?: string;
         confirmPassword?: string;
     }>({});
+    const [openDialog, setOpenDialog] = useState(false);
+    const [dialogContent, setDialogContent] = useState({ title: '', message: '' });
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const { reset, isLoading, error, isSuccess } = usePasswordReset();
 
     const validate = () => {
         const newErrors: typeof errors = {};
@@ -54,18 +61,32 @@ export default function ResetPasswordForm() {
         return Object.keys(newErrors).length === 0;
     };
 
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        if (isSuccess) {
+            navigate('/login');
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!validate()) return;
 
-        try {
-            await resetPassword(email, tempPassword, password);
-            console.log('Password reset successfully');
-            const data = await login(email, password)
-            navigate(`/chat/${data.session.user.username}`);
-        } catch (error) {
-            handleErrors(error, 'reset')
+        const success = await reset(email, tempPassword, password);
+
+        if (success) {
+            setDialogContent({
+                title: 'Success!',
+                message: 'Password has been reset successfully. Please log in with your new password.',
+            });
+            setOpenDialog(true);
+        } else {
+            setDialogContent({
+                title: 'Error!',
+                message: error || 'Failed to reset password. Please try again.',
+            });
+            setOpenDialog(true);
         }
     };
 
@@ -73,7 +94,7 @@ export default function ResetPasswordForm() {
         <>
             <LoginFormGlobalStyle />
             <div className='container'>
-                <form>
+                <form onSubmit={handleSubmit}>
                     <div className='header'>
                         <Box component="img" src={VGUFullLogo} alt="VGU Logo" className="logoVGU" />
                         <div className='text'>Reset Password</div>
@@ -85,7 +106,7 @@ export default function ResetPasswordForm() {
                             navigate('/login')
                         }}
                         className='back'
-                        >
+                    >
                         <ArrowBackIcon className='icon-button' sx={{ width: '18px' }} />
                         Turn back
                     </a>
@@ -159,10 +180,19 @@ export default function ResetPasswordForm() {
                     </div>
 
                     <div className='submit-container'>
-                        <button onClick={handleSubmit}  className='submit'>Confirm</button>
+                        <button type='submit' className='submit' disabled={isLoading}>
+                            {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Confirm'}
+                        </button>
                     </div>
                 </form>
             </div>
+
+            <AlertDialog
+                open={openDialog}
+                title={dialogContent.title}
+                message={dialogContent.message}
+                onClose={handleCloseDialog}
+            />
         </>
     );
 }

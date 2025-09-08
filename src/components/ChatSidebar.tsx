@@ -1,0 +1,106 @@
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, List, ListItem, ListItemButton, IconButton } from '@mui/material';
+import { styled } from '@mui/system';
+import AddIcon from '@mui/icons-material/Add';
+import VGULogo from '../assets/VGU-Logo.png';
+import { getTopics } from '../services/api/message';
+import type { Topic } from '../services/types';
+import { COLORS } from '@util/colors';
+
+const SidebarContainer = styled(Box)({
+  backgroundColor: COLORS.navy,
+  padding: '16px',
+  color: 'white',
+  boxShadow: '4px 0px 8px rgba(0, 0, 0, 0.1)',
+  height: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+});
+
+interface ChatSidebarProps {
+  onSelectTopic: (topic: Topic) => void;
+}
+
+const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectTopic }) => {
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchTopics() {
+      try {
+        const res = await getTopics();
+        setTopics(res);
+      } catch (error) {
+        console.error('Error loading topics:', error);
+      }
+    }
+    fetchTopics();
+  }, []);
+
+  const handleSelectTopic = (topic: Topic) => {
+    setSelectedTopicId(topic.id);
+    onSelectTopic(topic);
+  };
+
+  return (
+    <SidebarContainer>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, height: '64px' }}>
+        <Box
+          component="img"
+          src={VGULogo}
+          alt="VGU Logo"
+          sx={{ width: 200, height: 'auto', marginRight: 2 }}
+        />
+      </Box>
+
+
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+          Chat History
+        </Typography>
+        <IconButton size="small" sx={{ color: COLORS.cyan }}>
+          <AddIcon />
+        </IconButton>
+      </Box>
+
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+        }}
+      >
+        <List>
+          {topics.map((topic) => (
+            <ListItem disablePadding key={topic.id}>
+              <ListItemButton
+                selected={selectedTopicId === topic.id}
+                onClick={() => handleSelectTopic(topic)}
+                sx={{
+                  bgcolor: selectedTopicId === topic.id ? COLORS.navyDark : 'transparent',
+                  borderRadius: '8px',
+                  '&.Mui-selected': {
+                    bgcolor: COLORS.navyDark,
+                    '&:hover': { bgcolor: COLORS.navyDark },
+                  },
+                  '&:hover': { bgcolor: COLORS.navyHover },
+                  transition: 'background-color 0.15s ease',
+                }}
+              >
+                <Typography variant="body2" sx={{ color: COLORS.textOnNavy, fontWeight: 'bold' }}>
+                  {topic.title}
+                </Typography>
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+    </SidebarContainer>
+  );
+};
+
+export default ChatSidebar;
