@@ -1,6 +1,14 @@
 import { createGlobalStyle } from 'styled-components';
 
-const LoginFormGlobalStyle = createGlobalStyle`
+export const GlobalStyle = createGlobalStyle`
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+  }
+`;
+
+export const LoginFormGlobalStyle = createGlobalStyle`
   html, body {
     height: 100%;
     margin: 0;
@@ -17,4 +25,3 @@ const LoginFormGlobalStyle = createGlobalStyle`
   }
 `;
 
-export default LoginFormGlobalStyle;

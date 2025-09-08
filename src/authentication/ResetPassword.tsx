@@ -7,7 +7,7 @@ import {
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VGUFullLogo from '../assets/LOGO/loginlogo.png';
-import LoginFormGlobalStyle from '../globalstyle.tsx';
+import { LoginFormGlobalStyle } from '../globalstyle.tsx';
 import './login_signupform.css';
 
 import { usePasswordReset } from '@hooks/user/usePasswordReset';
