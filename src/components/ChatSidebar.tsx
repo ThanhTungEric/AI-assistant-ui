@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Box, Typography, List, ListItem, ListItemButton, IconButton } from '@mui/material';
 import { styled } from '@mui/system';
 import AddIcon from '@mui/icons-material/Add';
 import VGULogo from '../assets/VGU-Logo.png';
-import { getTopics } from '../services/api/message';
 import type { Topic } from '../services/types';
 import { COLORS } from '@util/colors';
 
@@ -18,29 +17,13 @@ const SidebarContainer = styled(Box)({
 });
 
 interface ChatSidebarProps {
+  topics: Topic[];
+  selectedTopicId: number | null;
   onSelectTopic: (topic: Topic) => void;
+  onNewTopic: () => void;
 }
 
-const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectTopic }) => {
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
-
-  useEffect(() => {
-    async function fetchTopics() {
-      try {
-        const res = await getTopics();
-        setTopics(res);
-      } catch (error) {
-        console.error('Error loading topics:', error);
-      }
-    }
-    fetchTopics();
-  }, []);
-
-  const handleSelectTopic = (topic: Topic) => {
-    setSelectedTopicId(topic.id);
-    onSelectTopic(topic);
-  };
+const ChatSidebar: React.FC<ChatSidebarProps> = ({ topics, selectedTopicId, onSelectTopic, onNewTopic }) => {
 
   return (
     <SidebarContainer>
@@ -53,12 +36,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectTopic }) => {
         />
       </Box>
 
-
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
           Chat History
         </Typography>
-        <IconButton size="small" sx={{ color: COLORS.cyan }}>
+        <IconButton size="small" sx={{ color: COLORS.cyan }} onClick={onNewTopic}>
           <AddIcon />
         </IconButton>
       </Box>
@@ -79,7 +61,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectTopic }) => {
             <ListItem disablePadding key={topic.id}>
               <ListItemButton
                 selected={selectedTopicId === topic.id}
-                onClick={() => handleSelectTopic(topic)}
+                onClick={() => onSelectTopic(topic)}
                 sx={{
                   bgcolor: selectedTopicId === topic.id ? COLORS.navyDark : 'transparent',
                   borderRadius: '8px',

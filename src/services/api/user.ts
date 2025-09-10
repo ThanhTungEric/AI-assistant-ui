@@ -9,8 +9,8 @@ export async function logout(): Promise<LogoutResponse> {
   return request<LogoutResponse>('/users/auth/logout', 'POST');
 }
 
-export async function register(email: string, username: string, password: string): Promise<RegisterResponse> {
-  return request<RegisterResponse>('/users/auth/signup', 'POST', { email, username, password });
+export async function register(email: string, fullName: string, password: string): Promise<RegisterResponse> {
+  return request<RegisterResponse>('/users/auth/signup', 'POST', { email, fullName, password });
 }
 
 export async function forgotPassword(email: string): Promise<ForgotPassword> {

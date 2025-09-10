@@ -19,7 +19,7 @@ import { COLORS } from '@util/colors.ts';
 
 export default function SignupForm() {
     const [email, setEmail] = useState('');
-    const [username, setUsername] = useState('');
+    const [fullName, setFullName] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [openDialog, setOpenDialog] = useState(false);
@@ -27,13 +27,12 @@ export default function SignupForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-
     const navigate = useNavigate();
     const { registerUser, isLoading, error } = useAuth();
 
     const [errors, setErrors] = useState<{
         email?: string;
-        username?: string;
+        fullName?: string;
         password?: string;
         confirmPassword?: string;
     }>({});
@@ -48,8 +47,8 @@ export default function SignupForm() {
             newErrors.email = 'Invalid email format';
         }
 
-        if (!username.trim()) {
-            newErrors.username = 'Username is required';
+        if (!fullName.trim()) {
+            newErrors.fullName = 'Full name is required';
         }
 
         if (!password) {
@@ -79,7 +78,7 @@ export default function SignupForm() {
         e.preventDefault();
         if (!validate()) return;
 
-        const data = await registerUser(email, username, password);
+        const data = await registerUser(email, fullName, password);
 
         if (data) {
             setDialogContent({
@@ -145,17 +144,17 @@ export default function SignupForm() {
                     />
 
                     <TextField
-                        label="Username"
+                        label="Full Name"
                         variant="outlined"
                         fullWidth
                         margin="normal"
-                        value={username}
+                        value={fullName}
                         onChange={(e) => {
-                            setUsername(e.target.value);
-                            if (errors.username) setErrors((prev) => ({ ...prev, username: undefined }));
+                            setFullName(e.target.value);
+                            if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
                         }}
-                        error={!!errors.username}
-                        helperText={errors.username}
+                        error={!!errors.fullName}
+                        helperText={errors.fullName}
                     />
 
                     <TextField
@@ -199,7 +198,10 @@ export default function SignupForm() {
                         InputProps={{
                             endAdornment: (
                                 <InputAdornment position="end">
-                                    <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                                    <IconButton
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        edge="end"
+                                    >
                                         <VisibilityIcon />
                                     </IconButton>
                                 </InputAdornment>

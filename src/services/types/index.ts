@@ -2,13 +2,13 @@
 
 export interface User {
   id: number;
-  username: string;
   email: string;
+  fullName: string;
 }
 
 export interface LoginResponse {
-  message: string;
-  session: { user: User };
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface LogoutResponse {

@@ -4,7 +4,6 @@ import LoginForm from './authentication/LoginPage.jsx';
 import SignupForm from './authentication/SignupPage.jsx';
 import Home from './pages/Home.jsx';
 import WelcomePage from './pages/Welcome.jsx';
-import { getProfile } from './services/api/user.js';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -41,23 +40,17 @@ const App: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        await getProfile();
-
-        if (location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register') {
-          navigate('/home');
-        }
-      } catch (err) {
-        if (location.pathname !== '/' && location.pathname !== '/login' && location.pathname !== '/register') {
-          navigate('/');
-        }
-      } finally {
-        setLoading(false);
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+      if (location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register') {
+        navigate('/home');
       }
-    };
-
-    checkSession();
+    } else {
+      if (location.pathname !== '/' && location.pathname !== '/login' && location.pathname !== '/register') {
+        navigate('/');
+      }
+    }
+    setLoading(false);
   }, [navigate, location.pathname]);
 
   if (loading) {

@@ -10,6 +10,9 @@ import { COLORS } from '@util/colors';
 interface ChatWindowProps {
   messages: ChatMessage[];
   onSendMessage: (text: string) => void;
+  messageContainerRef: React.RefObject<HTMLDivElement | null>;
+  isLoadingMore?: boolean;
+  justOpenedTopic?: boolean;
 }
 
 const ChatWindowContainer = styled(Box)({
@@ -41,12 +44,24 @@ const InputArea = styled(Box)({
   zIndex: 10,
 });
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({
+  messages,
+  onSendMessage,
+  messageContainerRef,
+  isLoadingMore,
+  justOpenedTopic,
+}) => {
   const [input, setInput] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
+    if (justOpenedTopic && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+    }
+  }, [justOpenedTopic]);
+
+  useEffect(() => {
+    if (!isLoadingMore && !justOpenedTopic && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
@@ -70,7 +85,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage }) => {
 
   return (
     <ChatWindowContainer>
-      <MessageArea>
+      <MessageArea ref={messageContainerRef}>
         {messages.map((message) => (
           <ChatMessageComponent key={message.id} message={message} />
         ))}
@@ -81,11 +96,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage }) => {
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Nhập tin nhắn của bạn..."
+          placeholder="Type your message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          aria-label="Soạn tin nhắn"
+          aria-label="Compose message"
           sx={{
             mr: 1,
             '& .MuiOutlinedInput-root': {
@@ -106,7 +121,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage }) => {
 
         <IconButton
           onClick={handleSend}
-          aria-label="Gửi tin nhắn"
+          aria-label="Send message"
           disabled={!canSend}
           sx={{
             ml: 1,

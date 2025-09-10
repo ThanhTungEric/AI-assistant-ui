@@ -1,12 +1,11 @@
-// api/message.ts
 import request from './request';
 import type {
   CreateMessageResponse,
   GetMessagesResponse,
-  GetTopicsWithMessagesResponse,
   Message,
   Topic,
 } from '../types';
+
 
 export async function createMessage(
   topicId: number | undefined,
@@ -15,25 +14,27 @@ export async function createMessage(
 ): Promise<CreateMessageResponse> {
   const payload: any = { content, sender };
   if (topicId !== undefined) payload.topicId = topicId;
-  return request<CreateMessageResponse>('/users/message', 'POST', payload);
+  return request<CreateMessageResponse>('/messages', 'POST', payload);
 }
+
 
 export async function getMessages(): Promise<GetMessagesResponse> {
-  return request<GetMessagesResponse>('/users/message', 'GET');
+  return request<GetMessagesResponse>('/messages', 'GET');
 }
 
-export async function getTopicsWithMessages(): Promise<GetTopicsWithMessagesResponse> {
-  return request<GetTopicsWithMessagesResponse>('/users/message/topics', 'GET');
-}
 
 export async function getTopics(): Promise<Topic[]> {
-  const res = await request<{ message: string; data: Topic[] }>('/topics/by-user', 'GET');
-  return res.data;
+  return request<Topic[]>('/topics', 'GET');
 }
 
-export async function getMessagesByTopic(topicId: number): Promise<Message[]> {
+
+export async function getMessagesByTopic(
+  topicId: number,
+  page: number = 1,
+  limit: number = 20,
+): Promise<Message[]> {
   const res = await request<{ message: string; data: Message[] }>(
-    `/users/message/topics/${topicId}/messages`,
+    `/messages/topic/${topicId}?page=${page}&limit=${limit}`,
     'GET'
   );
   return res.data;

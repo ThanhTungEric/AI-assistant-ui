@@ -3,6 +3,6 @@ export interface ProfileResponse {
     user: {
         id: number;
         email: string;
-        username: string;
+        fullName: string;
     };
 }

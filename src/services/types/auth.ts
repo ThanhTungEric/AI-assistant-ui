@@ -1,6 +1,6 @@
 export interface LoginResponse {
-    message: string;
-    session: any;
+    accessToken: string;
+    refreshToken: string;
 }
 
 export interface RegisterResponse {
@@ -8,10 +8,9 @@ export interface RegisterResponse {
     user: {
         id: number;
         email: string;
-        username: string;
+        fullName: string;
     };
 }
-
 
 export interface LogoutResponse {
     message: string;

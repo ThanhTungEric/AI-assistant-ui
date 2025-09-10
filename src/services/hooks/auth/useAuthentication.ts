@@ -6,30 +6,40 @@ export function useAuth() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const loginUser = async (userLogin: string, password: string): Promise<LoginResponse | null> => {
+    const loginUser = async (
+        email: string,
+        password: string
+    ): Promise<LoginResponse | null> => {
         setIsLoading(true);
         setError(null);
         try {
-            const data = await login(userLogin, password);
+
+            const data = await login(email, password);
+
+            if (data?.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+            }
             return data;
         } catch (err) {
-            const errorMessage = 'Login failed. Please try again.';
-            setError(errorMessage);
+            setError('Login failed. Please try again.');
             return null;
         } finally {
             setIsLoading(false);
         }
     };
 
-    const registerUser = async (email: string, username: string, password: string): Promise<RegisterResponse | null> => {
+    const registerUser = async (
+        email: string,
+        fullName: string,
+        password: string
+    ): Promise<RegisterResponse | null> => {
         setIsLoading(true);
         setError(null);
         try {
-            const data = await register(email, username, password);
-            return data;
+
+            return await register(email, fullName, password);
         } catch (err) {
-            const errorMessage = 'Registration failed. Please try again.';
-            setError(errorMessage);
+            setError('Registration failed. Please try again.');
             return null;
         } finally {
             setIsLoading(false);
@@ -37,14 +47,13 @@ export function useAuth() {
     };
 
     const logoutUser = async (): Promise<LogoutResponse | null> => {
+        localStorage.removeItem('accessToken');
         setIsLoading(true);
         setError(null);
         try {
-            const data = await logout();
-            return data;
+            return await logout();
         } catch (err) {
-            const errorMessage = 'Logout failed. Please try again.';
-            setError(errorMessage);
+            setError('Logout failed. Please try again.');
             return null;
         } finally {
             setIsLoading(false);

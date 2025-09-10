@@ -1,54 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  InputAdornment,
-  IconButton,
-  CircularProgress,
-  Paper,
-  Link,
-} from '@mui/material';
+import { Box, TextField, Button, Typography, InputAdornment, IconButton, CircularProgress, Paper, Link } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VGUFullLogo from '../assets/VGU-Logo.png';
-import { getProfile } from '../services/api/user.ts';
 import { useAuth } from '@hooks/index.ts';
 import { COLORS } from '@util/colors.ts';
 import AlertDialog from '@components/AlertDialog.tsx';
 
 export default function LoginForm() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
-  const [checkingSession, setCheckingSession] = useState(true);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [openAlertDialog, setOpenAlertDialog] = useState(false);
 
   const navigate = useNavigate();
   const { loginUser, isLoading, error } = useAuth();
 
   useEffect(() => {
-    const checkLoggedIn = async () => {
-      try {
-        const res = await getProfile();
-        if (res.session?.user) {
-          navigate(`/chat/${res.session.user.username}`);
-        }
-      } catch {
-        // not logged in
-      } finally {
-        setCheckingSession(false);
-      }
-    };
-    checkLoggedIn();
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+      navigate(`/home`);
+    }
   }, [navigate]);
 
   const validate = () => {
     const newErrors: typeof errors = {};
-    if (!username.trim()) newErrors.username = 'Username is required';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = 'Invalid email format';
+    }
+
     if (!password) newErrors.password = 'Password is required';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -57,28 +44,20 @@ export default function LoginForm() {
     e.preventDefault();
     if (!validate()) return;
 
-    const data = await loginUser(username, password);
-    if (data) {
-      navigate('/');
+    const data = await loginUser(email, password);
+    if (data?.accessToken) {
+      navigate(`/home`);  // Điều hướng sau khi login thành công
     }
   };
 
   const handleOpenAlertDialog = (e: React.MouseEvent) => {
-    e.preventDefault(); // Ngăn chặn chuyển hướng
+    e.preventDefault();
     setOpenAlertDialog(true);
   };
 
   const handleCloseAlertDialog = () => {
     setOpenAlertDialog(false);
   };
-
-  if (checkingSession) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   return (
     <Box
@@ -108,24 +87,24 @@ export default function LoginForm() {
             alt="VGU Logo"
             sx={{ height: 60, objectFit: 'contain', mb: 1 }}
           />
-          <Typography variant="h6" sx={{ mt: 1 }}>
-            Login to AI assistant
+          <Typography variant="h6" sx={{ mt: 1, color: COLORS.navy }}>
+            Login to AI Assistant
           </Typography>
         </Box>
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <TextField
-            label="Username"
+            label="Email"
             variant="outlined"
             fullWidth
             margin="normal"
-            value={username}
+            value={email}
             onChange={(e) => {
-              setUsername(e.target.value);
-              if (errors.username) setErrors((prev) => ({ ...prev, username: undefined }));
+              setEmail(e.target.value);
+              if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
             }}
-            error={!!errors.username}
-            helperText={errors.username}
+            error={!!errors.email}
+            helperText={errors.email}
           />
 
           <TextField
@@ -202,13 +181,13 @@ export default function LoginForm() {
           </Box>
         </Box>
       </Paper>
+
       <AlertDialog
         open={openAlertDialog}
         title="Password Recovery"
         message="Your password reset request has been submitted. Please check your email at example@vgu.edu.vn."
         onClose={handleCloseAlertDialog}
       />
-
     </Box>
   );
 }
