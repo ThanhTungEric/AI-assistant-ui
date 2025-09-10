@@ -17,16 +17,13 @@ export async function createMessage(
   return request<CreateMessageResponse>('/messages', 'POST', payload);
 }
 
-
 export async function getMessages(): Promise<GetMessagesResponse> {
   return request<GetMessagesResponse>('/messages', 'GET');
 }
 
-
 export async function getTopics(): Promise<Topic[]> {
   return request<Topic[]>('/topics', 'GET');
 }
-
 
 export async function getMessagesByTopic(
   topicId: number,
@@ -38,4 +35,9 @@ export async function getMessagesByTopic(
     'GET'
   );
   return res.data;
+}
+
+
+export async function getTopicById(topicId: number): Promise<Topic> {
+  return request<Topic>(`/topics/${topicId}`, 'GET');
 }

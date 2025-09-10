@@ -16,13 +16,7 @@ import ChatWindow from '../components/ChatWindow';
 import type { Topic } from '../services/types';
 import { useAuth, useMessage, useTopic } from '@hooks/index.ts';
 import { useNavigate } from 'react-router-dom';
-
-export interface ChatMessage {
-    id: number;
-    sender: 'User' | 'AI';
-    text: string;
-    createdAt?: string;
-}
+import { getTopicById } from '../services/api/message';
 
 const lightOrangeBackground = '#FFF3E0';
 
@@ -37,7 +31,7 @@ const HomeContainer = styled(Box)(({ theme }) => ({
 }));
 
 const Home: React.FC = () => {
-    const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+    const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const theme = useTheme();
@@ -48,18 +42,22 @@ const Home: React.FC = () => {
 
     const { topics, setTopics } = useTopic();
 
-    const onNewTopicCreated = (newTopic: Topic) => {
-        setSelectedTopic(newTopic);
+    const onNewTopicCreated = async (newTopic: Topic) => {
+        setSelectedTopicId(newTopic.id);
         setTopics((prev) => [newTopic, ...prev]);
+        if (newTopic.id) {
+            const updatedTopic = await getTopicById(newTopic.id);
+            setSelectedTopicId(updatedTopic.id);
+        }
     };
 
-    const { messages, sendMessage, setMessages, messageContainerRef } = useMessage(
-        selectedTopic?.id || null,
+    const { messages, sendMessage, setMessages, messageContainerRef, isTyping } = useMessage(
+        selectedTopicId,
         onNewTopicCreated
     );
 
     const onNewTopic = () => {
-        setSelectedTopic(null);
+        setSelectedTopicId(null);
         setMessages([]);
     };
 
@@ -80,8 +78,8 @@ const Home: React.FC = () => {
                     <Box sx={{ width: '280px', flexShrink: 0 }}>
                         <ChatSidebar
                             topics={topics}
-                            selectedTopicId={selectedTopic?.id || null}
-                            onSelectTopic={(topic) => setSelectedTopic(topic)}
+                            selectedTopicId={selectedTopicId}
+                            onSelectTopic={(topic) => setSelectedTopicId(topic.id)}
                             onNewTopic={onNewTopic}
                         />
                     </Box>
@@ -113,6 +111,7 @@ const Home: React.FC = () => {
                         messages={messages}
                         onSendMessage={sendMessage}
                         messageContainerRef={messageContainerRef}
+                        isTyping={isTyping} // Truyền prop isTyping xuống
                     />
                 </Box>
             </HomeContainer>
@@ -123,9 +122,9 @@ const Home: React.FC = () => {
             >
                 <ChatSidebarDrawer
                     topics={topics}
-                    selectedTopicId={selectedTopic?.id || null}
+                    selectedTopicId={selectedTopicId}
                     onSelectTopic={(topic) => {
-                        setSelectedTopic(topic);
+                        setSelectedTopicId(topic.id);
                         setDrawerOpen(false);
                     }}
                     onClose={() => setDrawerOpen(false)}

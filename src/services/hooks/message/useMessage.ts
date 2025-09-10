@@ -1,7 +1,7 @@
-import type { ChatMessage } from "pages/Home";
 import { useEffect, useRef, useState } from "react";
-import { createMessage, getMessagesByTopic } from "../../api/message";
+import { createMessage, getMessagesByTopic, getTopicById } from "../../api/message";
 import type { Message, Topic } from "../../types/index";
+import type { ChatMessage } from "../../types/index";
 
 export const useMessage = (
     selectedTopicId: number | null,
@@ -11,13 +11,14 @@ export const useMessage = (
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const messageContainerRef = useRef<HTMLDivElement>(null);
+    const [isTyping, setIsTyping] = useState(false);
+    const [justOpenedTopic, setJustOpenedTopic] = useState(false);
 
     const loadMessages = async (currentPage: number) => {
         if (!selectedTopicId) {
             setMessages([]);
             return;
         }
-
         try {
             const fetchedMessages: Message[] = await getMessagesByTopic(
                 selectedTopicId,
@@ -28,9 +29,9 @@ export const useMessage = (
                 sender: m.sender === "user" ? "User" : ("AI" as "User" | "AI"),
                 text: m.content,
                 createdAt: m.createdAt,
+                topicId: selectedTopicId,
             }));
 
-            // Backend trả DESC -> đảo ngược để render ASC
             const normalized = [...formatted].reverse();
 
             if (formatted.length < 20) {
@@ -41,7 +42,6 @@ export const useMessage = (
                 if (currentPage === 1) {
                     return normalized;
                 } else {
-                    // 🟢 Giữ vị trí cuộn khi prepend
                     const container = messageContainerRef.current;
                     const oldScrollHeight = container?.scrollHeight || 0;
 
@@ -69,10 +69,11 @@ export const useMessage = (
             id: Date.now(),
             sender: "User",
             text,
+            topicId: selectedTopicId || undefined,
         };
 
-        // Thêm tin nhắn tạm thời
         setMessages((prev) => [...prev, tempMessage]);
+        setIsTyping(true);
 
         try {
             const res = await createMessage(selectedTopicId ?? undefined, text, "user");
@@ -82,6 +83,7 @@ export const useMessage = (
                 sender: "User",
                 text: res.data.userMessage.content,
                 createdAt: res.data.userMessage.createdAt,
+                topicId: selectedTopicId || undefined,
             };
 
             const aiMessage: ChatMessage = {
@@ -89,25 +91,58 @@ export const useMessage = (
                 sender: "AI",
                 text: res.data.aiMessage.content,
                 createdAt: res.data.aiMessage.createdAt,
+                topicId: selectedTopicId || undefined,
             };
 
-            if (!selectedTopicId) {
-                const newTopic: Topic = {
-                    id: res.data.userMessage.topicId ?? 0,
-                    title: res.data.userMessage.topicTitle ?? "",
-                    createdAt: res.data.userMessage.createdAt ?? "",
-                    messages: [],
-                };
-                onNewTopicCreated(newTopic);
+            setIsTyping(false);
+
+            let currentText = '';
+            let currentIndex = 0;
+            const typingInterval = setInterval(() => {
+                if (currentIndex < aiMessage.text.length) {
+                    currentText += aiMessage.text[currentIndex];
+                    setMessages((prev) => {
+                        const lastMsg = prev[prev.length - 1];
+
+                        if (lastMsg && lastMsg.id === aiMessage.id) {
+                            return [...prev.slice(0, -1), { ...lastMsg, text: currentText }];
+                        }
+
+                        return [
+                            ...prev.filter((m) => m.id !== tempMessage.id),
+                            userMessage,
+                            { ...aiMessage, text: currentText },
+                        ];
+                    });
+
+                    currentIndex++;
+                } else {
+                    clearInterval(typingInterval);
+                }
+            }, 50);
+
+            if (!selectedTopicId && res.data.userMessage.topicId) {
+                const topicFromApi = await getTopicById(res.data.userMessage.topicId);
+                if (topicFromApi) {
+                    const topicFromResponse: Topic = {
+                        id: topicFromApi.id,
+                        title: topicFromApi.title,
+                        createdAt: topicFromApi.createdAt,
+                        messages: [],
+                    };
+                    onNewTopicCreated(topicFromResponse);
+                }
             }
 
             setMessages((prev) => [
                 ...prev.filter((m) => m.id !== tempMessage.id),
                 userMessage,
-                aiMessage,
+                { ...aiMessage, text: '' }
             ]);
+
         } catch (error) {
             console.error("Error sending message:", error);
+            setIsTyping(false);
             setMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
         }
     };
@@ -117,8 +152,6 @@ export const useMessage = (
             setPage((prevPage) => prevPage + 1);
         }
     };
-
-    const [justOpenedTopic, setJustOpenedTopic] = useState(false);
 
     useEffect(() => {
         setPage(1);
@@ -158,5 +191,6 @@ export const useMessage = (
         messageContainerRef,
         setMessages,
         justOpenedTopic,
+        isTyping,
     };
 };

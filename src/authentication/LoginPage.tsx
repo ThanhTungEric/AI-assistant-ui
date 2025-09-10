@@ -46,7 +46,7 @@ export default function LoginForm() {
 
     const data = await loginUser(email, password);
     if (data?.accessToken) {
-      navigate(`/home`);  // Điều hướng sau khi login thành công
+      navigate(`/home`);
     }
   };
 

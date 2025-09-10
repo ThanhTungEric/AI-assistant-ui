@@ -8,7 +8,7 @@ import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
 import ReactMarkdown from 'react-markdown';
 import { COLORS } from '@util/colors';
 
-import type { ChatMessage } from '../pages/Home';
+import type { ChatMessage } from 'services/types';
 
 interface ChatMessageProps {
   message: ChatMessage;

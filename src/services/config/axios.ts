@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const BASE_URL = 'http://localhost:3001/chat';
+// const BASE_URL = 'https://portal.vgu.edu.vn/chat';
 
 interface RefreshResponse {
   accessToken: string;
@@ -43,7 +44,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (err) {
         localStorage.removeItem('accessToken');
-        window.location.href = '/login';
+        window.location.href = '/ai-assistant/login';
       }
     }
 

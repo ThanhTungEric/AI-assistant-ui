@@ -1,19 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Box, TextField, IconButton } from '@mui/material';
 import { styled } from '@mui/system';
 import SendIcon from '@mui/icons-material/Send';
 import ChatMessageComponent from './ChatMessage';
-import type { ChatMessage } from '../pages/Home';
+import type { ChatMessage } from 'services/types';
+import { useProfile } from '@hooks/index';
 import { COLORS } from '@util/colors';
-
-interface ChatWindowProps {
-  messages: ChatMessage[];
-  onSendMessage: (text: string) => void;
-  messageContainerRef: React.RefObject<HTMLDivElement | null>;
-  isLoadingMore?: boolean;
-  justOpenedTopic?: boolean;
-}
 
 const ChatWindowContainer = styled(Box)({
   display: 'flex',
@@ -44,14 +37,57 @@ const InputArea = styled(Box)({
   zIndex: 10,
 });
 
+const TypingIndicatorContainer = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  marginBottom: '16px',
+  marginLeft: '16px',
+});
+
+const Dot = styled(Box)({
+  width: '8px',
+  height: '8px',
+  backgroundColor: COLORS.textSecondary,
+  borderRadius: '50%',
+  margin: '0 4px',
+  animation: 'blink 1.4s infinite ease-in-out both',
+  '@keyframes blink': {
+    '0%, 80%, 100%': { transform: 'scale(0)' },
+    '40%': { transform: 'scale(1)' },
+  },
+  '&:nth-of-type(1)': { animationDelay: '0s' },
+  '&:nth-of-type(2)': { animationDelay: '0.2s' },
+  '&:nth-of-type(3)': { animationDelay: '0.4s' },
+});
+
+const TypingIndicator = () => (
+  <TypingIndicatorContainer>
+    <Dot />
+    <Dot />
+    <Dot />
+  </TypingIndicatorContainer>
+);
+
+interface ChatWindowProps {
+  messages: ChatMessage[];
+  onSendMessage: (text: string) => void;
+  messageContainerRef: React.RefObject<HTMLDivElement | null>;
+  isLoadingMore?: boolean;
+  justOpenedTopic?: boolean;
+  isTyping: boolean;
+}
+
 const ChatWindow: React.FC<ChatWindowProps> = ({
   messages,
   onSendMessage,
   messageContainerRef,
   isLoadingMore,
   justOpenedTopic,
+  isTyping,
 }) => {
+  const { profile } = useProfile();
   const [input, setInput] = useState<string>('');
+  const [initialMessage, setInitialMessage] = useState<ChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,7 +100,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (!isLoadingMore && !justOpenedTopic && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, isTyping]);
+
+  useEffect(() => {
+    if (!messages.length && profile) {
+      const welcomeMessage: ChatMessage = {
+        id: Date.now(),
+        sender: 'AI',
+        text: `Hello ${profile.user.fullName}, for details on [admission method/tuition/training program], please see [Corresponding link]. ${profile.user.fullName}, please let us know the major you are interested in, email, and phone number so that VGU can provide detailed advice.`,
+        createdAt: new Date().toISOString(),
+      };
+      setInitialMessage(welcomeMessage);
+    }
+  }, [messages, profile]);
 
   const handleSend = (): void => {
     const text = input.trim();
@@ -86,9 +134,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   return (
     <ChatWindowContainer>
       <MessageArea ref={messageContainerRef}>
+        {initialMessage && (
+          <ChatMessageComponent key={initialMessage.id} message={initialMessage} />
+        )}
         {messages.map((message) => (
           <ChatMessageComponent key={message.id} message={message} />
         ))}
+        {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
       </MessageArea>
 

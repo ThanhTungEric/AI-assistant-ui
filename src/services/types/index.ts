@@ -62,11 +62,21 @@ export interface GetTopicsWithMessagesResponse {
 }
 
 export interface ProfileResponse {
-  session: {
-    user: User;
+  message: string;
+  user: {
+    id: number;
+    email: string;
+    fullName: string;
   };
 }
 
+export interface ChatMessage {
+  id: number;
+  sender: 'User' | 'AI';
+  text: string;
+  createdAt?: string;
+  topicId?: number;
+}
 
 export * from './user';
 export * from './auth';

@@ -27,7 +27,10 @@ const AlertDialog: React.FC<AlertDialogProps> = ({ open, title, message, onClose
                 {title}
             </DialogTitle>
             <DialogContent>
-                <DialogContentText id="alert-dialog-description">
+                <DialogContentText
+                    id="alert-dialog-description"
+                    sx={{ color: '#333', fontWeight: '400', fontSize: '1rem' }}
+                >
                     {message}
                 </DialogContentText>
             </DialogContent>
