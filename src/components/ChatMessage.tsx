@@ -2,9 +2,6 @@ import React from 'react';
 import { Box, Paper, Avatar, Stack, IconButton } from '@mui/material';
 import { styled } from '@mui/system';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import EditIcon from '@mui/icons-material/Edit';
-import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
-import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
 import ReactMarkdown from 'react-markdown';
 import { COLORS } from '@util/colors';
 
@@ -114,16 +111,6 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = React.memo(({ message }
           <Stack direction="row" spacing={1} sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
             <IconButton size="small">
               <ContentCopyIcon fontSize="small" sx={{ color: COLORS.textSecondary }} />
-            </IconButton>
-            <IconButton size="small">
-              <EditIcon fontSize="small" sx={{ color: COLORS.textSecondary }} />
-            </IconButton>
-            <Box sx={{ borderLeft: `1px solid ${COLORS.textSecondary}`, height: 16, mx: 1 }} />
-            <IconButton size="small">
-              <ThumbUpOutlinedIcon fontSize="small" sx={{ color: COLORS.textSecondary }} />
-            </IconButton>
-            <IconButton size="small">
-              <ThumbDownOutlinedIcon fontSize="small" sx={{ color: COLORS.textSecondary }} />
             </IconButton>
           </Stack>
         )}

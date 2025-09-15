@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Box, TextField, IconButton } from '@mui/material';
 import { styled } from '@mui/system';
@@ -73,7 +73,8 @@ interface ChatWindowProps {
   onSendMessage: (text: string) => void;
   messageContainerRef: React.RefObject<HTMLDivElement | null>;
   isLoadingMore?: boolean;
-  justOpenedTopic?: boolean;
+  justOpenedTopic: boolean;
+  setJustOpenedTopic: (value: boolean) => void;
   isTyping: boolean;
 }
 
@@ -84,24 +85,30 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   isLoadingMore,
   justOpenedTopic,
   isTyping,
+  setJustOpenedTopic,
 }) => {
   const { profile } = useProfile();
   const [input, setInput] = useState<string>('');
   const [initialMessage, setInitialMessage] = useState<ChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (justOpenedTopic && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+  // Khi vừa mở topic -> nhảy ngay xuống đáy (không animation)
+  useLayoutEffect(() => {
+    if (justOpenedTopic && messageContainerRef.current) {
+      const container = messageContainerRef.current;
+      container.scrollTop = container.scrollHeight;
+      setJustOpenedTopic(false);
     }
-  }, [justOpenedTopic]);
+  }, [justOpenedTopic, setJustOpenedTopic, messageContainerRef]);
 
+  // Khi có message mới sau đó -> cuộn mượt
   useEffect(() => {
     if (!isLoadingMore && !justOpenedTopic && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isTyping]);
 
+  // Thêm tin nhắn chào khi chưa có gì
   useEffect(() => {
     if (!messages.length && profile) {
       const welcomeMessage: ChatMessage = {

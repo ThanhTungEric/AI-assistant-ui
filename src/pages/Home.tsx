@@ -33,7 +33,7 @@ const HomeContainer = styled(Box)(({ theme }) => ({
 const Home: React.FC = () => {
     const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
-
+    const [justOpenedTopic, setJustOpenedTopic] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -59,6 +59,7 @@ const Home: React.FC = () => {
     const onNewTopic = () => {
         setSelectedTopicId(null);
         setMessages([]);
+        setJustOpenedTopic(true);
     };
 
     const handleLogout = async () => {
@@ -112,6 +113,8 @@ const Home: React.FC = () => {
                         onSendMessage={sendMessage}
                         messageContainerRef={messageContainerRef}
                         isTyping={isTyping} // Truyền prop isTyping xuống
+                        justOpenedTopic={justOpenedTopic} // 🔹 truyền xuống
+                        setJustOpenedTopic={setJustOpenedTopic} // 🔹 truyền hàm reset xuống
                     />
                 </Box>
             </HomeContainer>
