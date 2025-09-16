@@ -137,7 +137,7 @@ export const useMessage = (
                     clearInterval(typingInterval);
                     setIsTypingAnimation(false);
                 }
-            }, 1);
+            }, 0.1);
 
             setMessages((prev) => [
                 ...prev.filter((m) => m.id !== tempMessage.id),

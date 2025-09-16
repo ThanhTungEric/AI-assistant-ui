@@ -114,7 +114,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       const welcomeMessage: ChatMessage = {
         id: Date.now(),
         sender: 'AI',
-        text: `Hello ${profile.user.fullName}, for details on [admission method/tuition/training program], please see [Corresponding link]. ${profile.user.fullName}, please let us know the major you are interested in, email, and phone number so that VGU can provide detailed advice.`,
+        text: `Hello **${profile.user.fullName}**, for details on **Admission Method/Tuition/Training Program**, please see **[link](https://vgu.edu.vn/vi/admission)**. **${profile.user.fullName}**, please let us know the **Major** you are interested in; also please provide your **Email**, and **Phone number** so that VGU can provide detailed advice.`,
         createdAt: new Date().toISOString(),
       };
       setInitialMessage(welcomeMessage);
