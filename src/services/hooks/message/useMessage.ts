@@ -3,20 +3,37 @@ import { createMessage, getMessagesByTopic, getTopicById } from "../../api/messa
 import type { Message, Topic } from "../../types/index";
 import type { ChatMessage } from "../../types/index";
 
+// Define the return type for useMessage
+export interface UseMessageReturn {
+    messages: ChatMessage[];
+    hasMore: boolean;
+    sendMessage: (text: string) => Promise<void>;
+    loadMoreMessages: () => void;
+    messageContainerRef: React.RefObject<HTMLDivElement | null>;
+    setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+    justOpenedTopic: boolean;
+    isTyping: boolean;
+    createNewChat: () => Promise<void>;
+    activeTopicId: number | null;
+    setJustOpenedTopic: React.Dispatch<React.SetStateAction<boolean>>; // Added this line
+}
+
 export const useMessage = (
     selectedTopicId: number | null,
     onNewTopicCreated: (newTopic: Topic) => void
-) => {
+): UseMessageReturn => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const messageContainerRef = useRef<HTMLDivElement>(null);
-    const [isTyping, setIsTyping] = useState(false);
+    const [isTypingAnimation, setIsTypingAnimation] = useState(false);
     const [justOpenedTopic, setJustOpenedTopic] = useState(false);
+    const [activeTopicId, setActiveTopicId] = useState<number | null>(null);
 
     const loadMessages = async (currentPage: number) => {
         if (!selectedTopicId) {
             setMessages([]);
+            setActiveTopicId(null);
             return;
         }
         try {
@@ -57,6 +74,7 @@ export const useMessage = (
                     return newMessages;
                 }
             });
+            setActiveTopicId(selectedTopicId);
         } catch (error) {
             console.error("Error fetching messages for topic:", error);
         }
@@ -73,7 +91,6 @@ export const useMessage = (
         };
 
         setMessages((prev) => [...prev, tempMessage]);
-        setIsTyping(true);
 
         try {
             const res = await createMessage(selectedTopicId ?? undefined, text, "user");
@@ -94,32 +111,39 @@ export const useMessage = (
                 topicId: selectedTopicId || undefined,
             };
 
-            setIsTyping(false);
-
+            setIsTypingAnimation(true);
             let currentText = '';
             let currentIndex = 0;
             const typingInterval = setInterval(() => {
                 if (currentIndex < aiMessage.text.length) {
                     currentText += aiMessage.text[currentIndex];
                     setMessages((prev) => {
-                        const lastMsg = prev[prev.length - 1];
-
-                        if (lastMsg && lastMsg.id === aiMessage.id) {
-                            return [...prev.slice(0, -1), { ...lastMsg, text: currentText }];
+                        const lastMsgIndex = prev.findIndex(m => m.id === aiMessage.id);
+                        if (lastMsgIndex !== -1) {
+                            return [
+                                ...prev.slice(0, lastMsgIndex),
+                                { ...prev[lastMsgIndex], text: currentText },
+                                ...prev.slice(lastMsgIndex + 1),
+                            ];
                         }
-
                         return [
                             ...prev.filter((m) => m.id !== tempMessage.id),
                             userMessage,
                             { ...aiMessage, text: currentText },
                         ];
                     });
-
                     currentIndex++;
                 } else {
                     clearInterval(typingInterval);
+                    setIsTypingAnimation(false);
                 }
-            }, 50);
+            }, 1);
+
+            setMessages((prev) => [
+                ...prev.filter((m) => m.id !== tempMessage.id),
+                userMessage,
+                { ...aiMessage, text: '' },
+            ]);
 
             if (!selectedTopicId && res.data.userMessage.topicId) {
                 const topicFromApi = await getTopicById(res.data.userMessage.topicId);
@@ -134,17 +158,36 @@ export const useMessage = (
                 }
             }
 
-            setMessages((prev) => [
-                ...prev.filter((m) => m.id !== tempMessage.id),
-                userMessage,
-                { ...aiMessage, text: '' }
-            ]);
-
         } catch (error) {
             console.error("Error sending message:", error);
-            setIsTyping(false);
             setMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
         }
+    };
+
+    const createNewChat = async () => {
+        console.log("Starting new chat creation, isTyping:", isTypingAnimation);
+        if (isTypingAnimation) {
+            await new Promise((resolve) => {
+                const checkInterval = setInterval(() => {
+                    if (!isTypingAnimation) {
+                        clearInterval(checkInterval);
+                        resolve(true);
+                    }
+                }, 50);
+            });
+        }
+
+        if (selectedTopicId && messages.length > 0) {
+            console.log("Saving current chat messages:", messages);
+        } else {
+            console.log("No messages or topic to save, selectedTopicId:", selectedTopicId);
+        }
+
+        setPage(1);
+        setHasMore(true);
+        setMessages([]);
+        setJustOpenedTopic(true);
+        setIsTypingAnimation(false);
     };
 
     const loadMoreMessages = () => {
@@ -191,6 +234,9 @@ export const useMessage = (
         messageContainerRef,
         setMessages,
         justOpenedTopic,
-        isTyping,
+        isTyping: isTypingAnimation,
+        createNewChat,
+        activeTopicId,
+        setJustOpenedTopic, // Ensure this is returned
     };
 };

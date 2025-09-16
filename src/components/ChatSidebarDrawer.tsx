@@ -8,6 +8,7 @@ interface ChatSidebarDrawerProps {
   selectedTopicId: number | null;
   onSelectTopic: (topic: Topic) => void;
   onClose: () => void;
+  activeTopicId?: number | null; // Add this line
 }
 
 const primaryOrange = '#FF5722';
@@ -18,6 +19,7 @@ const ChatSidebarDrawer: React.FC<ChatSidebarDrawerProps> = ({
   selectedTopicId,
   onSelectTopic,
   onClose,
+  activeTopicId,
 }) => (
   <Box sx={{ width: 280 }}>
     <Box sx={{ p: 2 }}>
@@ -37,6 +39,7 @@ const ChatSidebarDrawer: React.FC<ChatSidebarDrawerProps> = ({
             sx={{
               bgcolor: selectedTopicId === topic.id ? darkOrange : 'transparent',
               '&.Mui-selected': { bgcolor: darkOrange },
+              ...(activeTopicId === topic.id && { fontWeight: 'bold' }), // Highlight active topic
             }}
           >
             <ListItemIcon>

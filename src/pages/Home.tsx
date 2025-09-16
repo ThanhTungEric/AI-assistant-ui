@@ -17,6 +17,7 @@ import type { Topic } from '../services/types';
 import { useAuth, useMessage, useTopic } from '@hooks/index.ts';
 import { useNavigate } from 'react-router-dom';
 import { getTopicById } from '../services/api/message';
+import type { UseMessageReturn } from '@hooks/message/useMessage'; // Type-only import
 
 const lightOrangeBackground = '#FFF3E0';
 
@@ -33,7 +34,6 @@ const HomeContainer = styled(Box)(({ theme }) => ({
 const Home: React.FC = () => {
     const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [justOpenedTopic, setJustOpenedTopic] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -42,24 +42,32 @@ const Home: React.FC = () => {
 
     const { topics, setTopics } = useTopic();
 
-    const onNewTopicCreated = async (newTopic: Topic) => {
+    const onNewTopicCreated = (newTopic: Topic) => {
         setSelectedTopicId(newTopic.id);
         setTopics((prev) => [newTopic, ...prev]);
         if (newTopic.id) {
-            const updatedTopic = await getTopicById(newTopic.id);
-            setSelectedTopicId(updatedTopic.id);
+            getTopicById(newTopic.id).then((updatedTopic) => {
+                setSelectedTopicId(updatedTopic.id);
+            }).catch((error) => console.error("Failed to fetch topic:", error));
         }
     };
 
-    const { messages, sendMessage, setMessages, messageContainerRef, isTyping } = useMessage(
-        selectedTopicId,
-        onNewTopicCreated
-    );
+    const {
+        messages,
+        sendMessage,
+        messageContainerRef,
+        isTyping,
+        createNewChat,
+        justOpenedTopic,
+        activeTopicId,
+        setJustOpenedTopic,
+    }: UseMessageReturn = useMessage(selectedTopicId, onNewTopicCreated);
 
-    const onNewTopic = () => {
+
+
+    const onNewTopic = async () => {
+        await createNewChat();
         setSelectedTopicId(null);
-        setMessages([]);
-        setJustOpenedTopic(true);
     };
 
     const handleLogout = async () => {
@@ -82,6 +90,7 @@ const Home: React.FC = () => {
                             selectedTopicId={selectedTopicId}
                             onSelectTopic={(topic) => setSelectedTopicId(topic.id)}
                             onNewTopic={onNewTopic}
+                            activeTopicId={activeTopicId}
                         />
                     </Box>
                 )}
@@ -101,7 +110,7 @@ const Home: React.FC = () => {
                             </IconButton>
                         )}
                         <Box sx={{ flexGrow: 1, textAlign: 'center' }}>
-                            Chat with AI assistant
+                            Chat with AI assistant - {activeTopicId ? `Topic ${activeTopicId}` : 'New Chat'}
                         </Box>
                         <IconButton onClick={handleLogout} sx={{ ml: 1 }}>
                             <LogoutIcon />
@@ -112,9 +121,9 @@ const Home: React.FC = () => {
                         messages={messages}
                         onSendMessage={sendMessage}
                         messageContainerRef={messageContainerRef}
-                        isTyping={isTyping} // Truyền prop isTyping xuống
-                        justOpenedTopic={justOpenedTopic} // 🔹 truyền xuống
-                        setJustOpenedTopic={setJustOpenedTopic} // 🔹 truyền hàm reset xuống
+                        isTyping={isTyping}
+                        justOpenedTopic={justOpenedTopic}
+                        setJustOpenedTopic={setJustOpenedTopic}
                     />
                 </Box>
             </HomeContainer>
@@ -131,6 +140,7 @@ const Home: React.FC = () => {
                         setDrawerOpen(false);
                     }}
                     onClose={() => setDrawerOpen(false)}
+                    activeTopicId={activeTopicId}
                 />
             </Drawer>
         </>

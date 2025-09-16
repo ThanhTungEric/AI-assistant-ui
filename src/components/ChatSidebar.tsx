@@ -21,10 +21,10 @@ interface ChatSidebarProps {
   selectedTopicId: number | null;
   onSelectTopic: (topic: Topic) => void;
   onNewTopic: () => void;
+  activeTopicId?: number | null; // Add this line
 }
 
-const ChatSidebar: React.FC<ChatSidebarProps> = ({ topics, selectedTopicId, onSelectTopic, onNewTopic }) => {
-
+const ChatSidebar: React.FC<ChatSidebarProps> = ({ topics, selectedTopicId, onSelectTopic, onNewTopic, activeTopicId}) => {
   return (
     <SidebarContainer>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, height: '64px' }}>
@@ -40,7 +40,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ topics, selectedTopicId, onSe
         <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
           Chat History
         </Typography>
-        <IconButton size="small" sx={{ color: COLORS.cyan }} onClick={onNewTopic}>
+        <IconButton type="button" size="small" sx={{ color: COLORS.cyan }} onClick={onNewTopic}>
           <AddIcon />
         </IconButton>
       </Box>
@@ -71,6 +71,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ topics, selectedTopicId, onSe
                   },
                   '&:hover': { bgcolor: COLORS.navyHover },
                   transition: 'background-color 0.15s ease',
+                  ...(activeTopicId === topic.id && { fontWeight: 'bold' }), // Highlight active topic
                 }}
               >
                 <Typography variant="body2" sx={{ color: COLORS.textOnNavy, fontWeight: 'bold' }}>

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import type { KeyboardEvent } from 'react';
-import { Box, TextField, IconButton } from '@mui/material';
+import { Box, TextField, IconButton, CircularProgress } from '@mui/material';
 import { styled } from '@mui/system';
 import SendIcon from '@mui/icons-material/Send';
 import ChatMessageComponent from './ChatMessage';
@@ -75,7 +74,7 @@ interface ChatWindowProps {
   isLoadingMore?: boolean;
   justOpenedTopic: boolean;
   setJustOpenedTopic: (value: boolean) => void;
-  isTyping: boolean;
+  isTyping: boolean; // Now reflects typing animation
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -91,8 +90,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [input, setInput] = useState<string>('');
   const [initialMessage, setInitialMessage] = useState<ChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isSending = useRef(false);
 
-  // Khi vừa mở topic -> nhảy ngay xuống đáy (không animation)
+  // Scroll to bottom when opening topic (no animation)
   useLayoutEffect(() => {
     if (justOpenedTopic && messageContainerRef.current) {
       const container = messageContainerRef.current;
@@ -101,16 +101,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [justOpenedTopic, setJustOpenedTopic, messageContainerRef]);
 
-  // Khi có message mới sau đó -> cuộn mượt
+  // Smooth scroll on new messages
   useEffect(() => {
     if (!isLoadingMore && !justOpenedTopic && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isTyping]);
+  }, [messages, isLoadingMore, justOpenedTopic, messagesEndRef]);
 
-  // Thêm tin nhắn chào khi chưa có gì
+  // Set welcome message if no messages exist
   useEffect(() => {
-    if (!messages.length && profile) {
+    if (!messages.length && profile && !initialMessage) {
       const welcomeMessage: ChatMessage = {
         id: Date.now(),
         sender: 'AI',
@@ -119,24 +119,28 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       };
       setInitialMessage(welcomeMessage);
     }
-  }, [messages, profile]);
+  }, [messages, profile, initialMessage]);
 
   const handleSend = (): void => {
+    if (isSending.current || isTyping) return;
     const text = input.trim();
-    if (text) {
-      onSendMessage(text);
-      setInput('');
-    }
+    if (!text) return;
+    isSending.current = true;
+    console.log('Sending:', text);
+    onSendMessage(text);
+    setInput('');
+    setTimeout(() => { isSending.current = false; }, 500);
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
-    if (event.key === 'Enter' && !event.shiftKey) {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (event.key === 'Enter' && !event.shiftKey && !isTyping) {
       event.preventDefault();
+      event.stopPropagation();
       handleSend();
     }
   };
 
-  const canSend = input.trim().length > 0;
+  const canSend = input.trim().length > 0 && !isTyping;
 
   return (
     <ChatWindowContainer>
@@ -177,8 +181,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             '& .MuiInputBase-input': { py: 1.5 },
           }}
         />
-
         <IconButton
+          type="button"
           onClick={handleSend}
           aria-label="Send message"
           disabled={!canSend}
@@ -197,8 +201,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             },
           }}
         >
-          <SendIcon />
+          {isTyping ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : (
+            <SendIcon />
+          )}
         </IconButton>
+
+        {!canSend && (
+          <span id="send-button-disabled" style={{ display: 'none' }}>
+            Send button is disabled because the input is empty.
+          </span>
+        )}
       </InputArea>
     </ChatWindowContainer>
   );
