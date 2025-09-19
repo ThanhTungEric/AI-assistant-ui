@@ -122,13 +122,20 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   }, [messages, profile, initialMessage]);
 
   const handleSend = (): void => {
-    if (isSending.current) return;
     const text = input.trim();
     if (!text) return;
+
+    // clear input immediately
+    setInput("");
+
+    // guard: block spamming
+    if (isSending.current) return;
+
     isSending.current = true;
     onSendMessage(text);
-    setInput('');
-    setTimeout(() => { isSending.current = false; }, 300);
+    setTimeout(() => {
+      isSending.current = false;
+    }, 300);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
