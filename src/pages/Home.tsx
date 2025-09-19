@@ -64,7 +64,7 @@ const Home: React.FC = () => {
     setSelectedTopicId(newTopic.id);
 
     setTopics((prev) => {
-      const filtered = prev.filter((t) => t.id !== newTopic.id);
+      const filtered = prev.filter((t) => t.id && t.id !== newTopic.id);
       return [newTopic, ...filtered];
     });
 
@@ -72,7 +72,7 @@ const Home: React.FC = () => {
       getTopicById(newTopic.id)
         .then((updatedTopic) => {
           setTopics((prev) => {
-            const filtered = prev.filter((t) => t.id !== updatedTopic.id);
+            const filtered = prev.filter((t) => t.id && t.id !== updatedTopic.id);
             return [updatedTopic, ...filtered];
           });
           setSelectedTopicId(updatedTopic.id);
@@ -98,16 +98,15 @@ const Home: React.FC = () => {
 
   // ➕ User clicks "New Chat"
   const onNewTopic = async () => {
-    const tempId = Date.now();
     const tempTopic: Topic = {
-      id: tempId,
-      title: "New Chat",
+      id: undefined as unknown as number,
+      title: "",
       createdAt: new Date().toISOString(),
       messages: [],
     };
 
     setTopics((prev) => [tempTopic, ...prev]);
-    setSelectedTopicId(tempId);
+    setSelectedTopicId(null);
     await createNewChat();
   };
 
