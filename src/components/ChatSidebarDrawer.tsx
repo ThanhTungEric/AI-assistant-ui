@@ -47,7 +47,9 @@ const ChatSidebarDrawer: React.FC<ChatSidebarDrawerProps> = ({
                 {topic.id}
               </Avatar>
             </ListItemIcon>
-            <Typography variant="body2">{topic.title}</Typography>
+            <Typography variant="body2">
+              {topic.title && topic.title.trim().length > 0 ? topic.title : "New Chat"}
+            </Typography>
           </ListItemButton>
         </ListItem>
       ))}

@@ -74,7 +74,7 @@ interface ChatWindowProps {
   isLoadingMore?: boolean;
   justOpenedTopic: boolean;
   setJustOpenedTopic: (value: boolean) => void;
-  isTyping: boolean; // Now reflects typing animation
+  isTyping: boolean; // already per-topic now
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -114,7 +114,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       const welcomeMessage: ChatMessage = {
         id: Date.now(),
         sender: 'AI',
-        text: `Hello **${profile.user.fullName}**, for details on **Admission Method/Tuition/Training Program**, please see **[link](https://vgu.edu.vn/vi/admission)**. **${profile.user.fullName}**, please let us know the **Major** you are interested in; also please provide your **Email**, and **Phone number** so that VGU can provide detailed advice.`,
+        text: `Hello **${profile.user.fullName}**, welcome to VGU chatbot. Please tell us your **Major** and provide your **Email** and **Phone number** so we can assist you with **Admission / Tuition / Training Program**. See [link](https://vgu.edu.vn/vi/admission) for more details.`,
         createdAt: new Date().toISOString(),
       };
       setInitialMessage(welcomeMessage);
@@ -122,25 +122,24 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   }, [messages, profile, initialMessage]);
 
   const handleSend = (): void => {
-    if (isSending.current || isTyping) return;
+    if (isSending.current) return;
     const text = input.trim();
     if (!text) return;
     isSending.current = true;
-    console.log('Sending:', text);
     onSendMessage(text);
     setInput('');
-    setTimeout(() => { isSending.current = false; }, 500);
+    setTimeout(() => { isSending.current = false; }, 300);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
-    if (event.key === 'Enter' && !event.shiftKey && !isTyping) {
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       event.stopPropagation();
       handleSend();
     }
   };
 
-  const canSend = input.trim().length > 0 && !isTyping;
+  const canSend = input.trim().length > 0;
 
   return (
     <ChatWindowContainer>
@@ -170,7 +169,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               borderRadius: '30px',
               backgroundColor: COLORS.bgSoft,
               paddingRight: 0,
-              transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
               '& fieldset': { borderColor: COLORS.navy },
               '&:hover fieldset': { borderColor: COLORS.navyHover },
               '&.Mui-focused fieldset': {
@@ -192,7 +190,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             bgcolor: canSend ? COLORS.navy : 'rgba(0,0,0,0.12)',
             color: canSend ? 'white' : 'rgba(0,0,0,0.38)',
             borderRadius: '50%',
-            transition: 'background-color 0.15s ease',
             '&:hover': {
               bgcolor: canSend ? COLORS.navyHover : 'rgba(0,0,0,0.12)',
             },
@@ -207,12 +204,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <SendIcon />
           )}
         </IconButton>
-
-        {!canSend && (
-          <span id="send-button-disabled" style={{ display: 'none' }}>
-            Send button is disabled because the input is empty.
-          </span>
-        )}
       </InputArea>
     </ChatWindowContainer>
   );

@@ -74,9 +74,16 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ topics, selectedTopicId, onSe
                   ...(activeTopicId === topic.id && { fontWeight: 'bold' }), // Highlight active topic
                 }}
               >
-                <Typography variant="body2" sx={{ color: COLORS.textOnNavy, fontWeight: 'bold' }}>
-                  {topic.title}
-                </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: COLORS.textOnNavy,
+                  fontWeight: topic.title && topic.title.trim().length > 0 ? 'bold' : 'medium',
+                  fontStyle: !topic.title || topic.title.trim().length === 0 ? 'italic' : 'normal',
+                }}
+              >
+                {topic.title && topic.title.trim().length > 0 ? topic.title : "New Chat"}
+              </Typography>
               </ListItemButton>
             </ListItem>
           ))}
