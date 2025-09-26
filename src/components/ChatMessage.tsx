@@ -1,8 +1,11 @@
 import React from 'react';
-import { Box, Paper, Avatar, Stack, IconButton } from '@mui/material';
+import { Box, Paper, Avatar, Stack, IconButton, Tooltip } from '@mui/material';
 import { styled } from '@mui/system';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
+import remarkLinkify from 'remark-linkify';
 import { COLORS } from '@util/colors';
 
 import type { ChatMessage } from 'services/types';
@@ -33,6 +36,13 @@ const ChatBubble = styled(Paper, {
 const ChatMessageComponent: React.FC<ChatMessageProps> = React.memo(({ message }) => {
   const isUser = message.sender === 'User';
 
+  // 🔹 Copy handler
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.text).catch((err) => {
+      console.error("Failed to copy text: ", err);
+    });
+  };
+
   return (
     <Box sx={{ display: 'flex', mb: 2, flexDirection: isUser ? 'row-reverse' : 'row' }}>
       <Avatar
@@ -58,7 +68,8 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = React.memo(({ message }
             },
             '& p': { margin: 0 },
             '& code': {
-              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+              fontFamily:
+                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
               background: isUser ? '#08223F' : '#F3F6FA',
               borderRadius: '4px',
               padding: '0 4px',
@@ -72,6 +83,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = React.memo(({ message }
           }}
         >
           <ReactMarkdown
+            remarkPlugins={[remarkGfm, remarkBreaks, remarkLinkify]}
             components={{
               a: ({ href, children, ...props }) => {
                 const childArray = React.Children.toArray(children);
@@ -86,19 +98,21 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = React.memo(({ message }
                 }
 
                 return (
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      color: COLORS.cyan,
-                      textDecoration: 'underline',
-                      wordBreak: 'break-all',
-                    }}
-                    {...props}
-                  >
-                    {display}
-                  </a>
+                  <Tooltip title={href || ''} arrow>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: COLORS.cyan,
+                        textDecoration: 'underline',
+                        wordBreak: 'break-all',
+                      }}
+                      {...props}
+                    >
+                      {display}
+                    </a>
+                  </Tooltip>
                 );
               },
             }}
@@ -108,8 +122,12 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = React.memo(({ message }
         </Box>
 
         {message.sender === 'AI' && (
-          <Stack direction="row" spacing={1} sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
-            <IconButton size="small">
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ mt: 1, display: 'flex', alignItems: 'center' }}
+          >
+            <IconButton size="small" onClick={handleCopy}>
               <ContentCopyIcon fontSize="small" sx={{ color: COLORS.textSecondary }} />
             </IconButton>
           </Stack>

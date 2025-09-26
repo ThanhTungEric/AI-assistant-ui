@@ -184,7 +184,7 @@ export const useMessage = (
             [realTopicId]: false,
           }));
         }
-      }, 10);
+      }, 0.1);
     } catch (error) {
       console.error("Error sending message:", error);
       // remove temp on error

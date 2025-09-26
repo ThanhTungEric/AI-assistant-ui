@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 import {
   Box,
   CssBaseline,
@@ -36,7 +36,6 @@ const HomeContainer = styled(Box)(({ theme }) => ({
 
 const Home: React.FC = () => {
   const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
-  const [isTypingByTopic, setIsTypingByTopic] = useState<Map<number, boolean>>(new Map());
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const theme = useTheme();
@@ -45,19 +44,6 @@ const Home: React.FC = () => {
   const { logoutUser } = useAuth();
   const navigate = useNavigate();
   const { topics, setTopics } = useTopic();
-
-  // 🧠 Sync isTypingByTopic to false for all when switching topic
-  useEffect(() => {
-    if (selectedTopicId === null) return;
-
-    setIsTypingByTopic((prev) => {
-      const newMap = new Map(prev);
-      for (const key of newMap.keys()) {
-        newMap.set(key, false);
-      }
-      return newMap;
-    });
-  }, [selectedTopicId]);
 
   // 📌 Called when a new topic is created
   const onNewTopicCreated = (newTopic: Topic) => {
@@ -93,10 +79,10 @@ const Home: React.FC = () => {
   }: UseMessageReturn = useMessage(
     selectedTopicId,
     onNewTopicCreated
-    // 🔗 We do NOT need to pass setIsTypingByTopic anymore!
+    // We do NOT need to pass setIsTypingByTopic anymore!
   );
 
-  // ➕ User clicks "New Chat"
+  // User clicks "New Chat"
   const onNewTopic = async () => {
     const tempTopic: Topic = {
       id: undefined as unknown as number,
@@ -160,7 +146,7 @@ const Home: React.FC = () => {
             </IconButton>
           </Box>
 
-          {/* 🧠 ChatWindow: isTyping comes from hook per-topic */}
+          {/* ChatWindow: isTyping comes from hook per-topic */}
           <ChatWindow
             messages={messages}
             onSendMessage={sendMessage}
