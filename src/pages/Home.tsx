@@ -34,6 +34,8 @@ const HomeContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
+// ... imports unchanged
+
 const Home: React.FC = () => {
   const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -76,6 +78,7 @@ const Home: React.FC = () => {
     justOpenedTopic,
     setJustOpenedTopic,
     activeTopicId,
+    loadMoreMessages, // ✅ now destructure loadMoreMessages
   }: UseMessageReturn = useMessage(
     selectedTopicId,
     onNewTopicCreated
@@ -153,6 +156,7 @@ const Home: React.FC = () => {
             isTyping={isTyping}
             justOpenedTopic={justOpenedTopic}
             setJustOpenedTopic={setJustOpenedTopic}
+            loadMoreMessages={loadMoreMessages} // ✅ pass it down
           />
         </Box>
       </HomeContainer>
@@ -179,3 +183,4 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+

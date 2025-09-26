@@ -74,7 +74,8 @@ interface ChatWindowProps {
   isLoadingMore?: boolean;
   justOpenedTopic: boolean;
   setJustOpenedTopic: (value: boolean) => void;
-  isTyping: boolean; // already per-topic now
+  isTyping: boolean;
+  loadMoreMessages: () => void; // ✅ added
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -85,6 +86,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   justOpenedTopic,
   isTyping,
   setJustOpenedTopic,
+  loadMoreMessages, // ✅ from parent
 }) => {
   const { profile } = useProfile();
   const [input, setInput] = useState<string>('');
@@ -92,23 +94,60 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isSending = useRef(false);
 
-  // Scroll to bottom when opening topic (no animation)
+  // 👀 track if user manually scrolled up
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+
+  // Scroll to bottom when opening topic
   useLayoutEffect(() => {
     if (justOpenedTopic && messageContainerRef.current) {
       const container = messageContainerRef.current;
       container.scrollTop = container.scrollHeight;
       setJustOpenedTopic(false);
+      setIsUserScrolling(false); // reset scroll lock
     }
   }, [justOpenedTopic, setJustOpenedTopic, messageContainerRef]);
 
-  // Smooth scroll on new messages
+  // Smooth scroll on new messages (only if user is not scrolling)
   useEffect(() => {
-    if (!isLoadingMore && !justOpenedTopic && messagesEndRef.current) {
+    if (!isLoadingMore && !justOpenedTopic && messagesEndRef.current && !isUserScrolling) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isLoadingMore, justOpenedTopic, messagesEndRef]);
+  }, [messages, isLoadingMore, justOpenedTopic, messagesEndRef, isUserScrolling]);
 
-  // Set welcome message if no messages exist
+  // Preserve scroll position when loading older messages
+  useLayoutEffect(() => {
+    if (isLoadingMore && messageContainerRef.current) {
+      const container = messageContainerRef.current;
+      const prevHeight = container.scrollHeight;
+      requestAnimationFrame(() => {
+        const newHeight = container.scrollHeight;
+        container.scrollTop = newHeight - prevHeight;
+      });
+    }
+  }, [messages, isLoadingMore]);
+
+  // Infinite scroll handler (top detection + scroll lock detection)
+  useEffect(() => {
+    const container = messageContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const nearBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+
+      // ✅ detect if user scrolled up (lock autoscroll)
+      setIsUserScrolling(!nearBottom);
+
+      if (container.scrollTop === 0 && !isLoadingMore) {
+        loadMoreMessages(); // ✅ directly call the hook
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [isLoadingMore, messageContainerRef, loadMoreMessages]);
+
+  // Welcome message
   useEffect(() => {
     if (!messages.length && profile && !initialMessage) {
       const welcomeMessage: ChatMessage = {
@@ -124,14 +163,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const handleSend = (): void => {
     const text = input.trim();
     if (!text) return;
+    setInput('');
 
-    // clear input immediately
-    setInput("");
-
-    // guard: block spamming
     if (isSending.current) return;
-
     isSending.current = true;
+
     onSendMessage(text);
     setTimeout(() => {
       isSending.current = false;
