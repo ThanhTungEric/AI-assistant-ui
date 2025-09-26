@@ -31,6 +31,7 @@ const ChatBubble = styled(Paper, {
   backgroundColor: isUser ? COLORS.navyDark : COLORS.bgSoft,
   color: isUser ? COLORS.textOnNavy : COLORS.textPrimary,
   transition: 'box-shadow 0.15s ease',
+  position: 'relative', // needed for internal positioning (AI actions)
 }));
 
 const ChatMessageComponent: React.FC<ChatMessageProps> = React.memo(({ message }) => {
@@ -57,82 +58,110 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = React.memo(({ message }
         {isUser ? 'N' : 'AI'}
       </Avatar>
 
-      <ChatBubble isUser={isUser}>
-        <Box
-          sx={{
-            typography: 'body1',
-            '& a': {
-              color: COLORS.cyan,
-              wordBreak: 'break-all',
-              textDecoration: 'underline',
-            },
-            '& p': { margin: 0 },
-            '& code': {
-              fontFamily:
-                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-              background: isUser ? '#08223F' : '#F3F6FA',
-              borderRadius: '4px',
-              padding: '0 4px',
-            },
-            '& pre code': {
-              display: 'block',
-              padding: '12px',
-              borderRadius: '8px',
-              overflowX: 'auto',
-            },
-          }}
-        >
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkBreaks, remarkLinkify]}
-            components={{
-              a: ({ href, children, ...props }) => {
-                const childArray = React.Children.toArray(children);
-                const firstChild = childArray[0];
-
-                let display;
-                if (typeof firstChild === 'string') {
-                  const isUrl = firstChild.startsWith('http');
-                  display = isUrl ? 'Xem chi tiết' : firstChild;
-                } else {
-                  display = firstChild;
-                }
-
-                return (
-                  <Tooltip title={href || ''} arrow>
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: COLORS.cyan,
-                        textDecoration: 'underline',
-                        wordBreak: 'break-all',
-                      }}
-                      {...props}
-                    >
-                      {display}
-                    </a>
-                  </Tooltip>
-                );
+      <Box sx={{ position: 'relative' }}>
+        <ChatBubble isUser={isUser}>
+          <Box
+            sx={{
+              typography: 'body1',
+              '& a': {
+                color: COLORS.cyan,
+                wordBreak: 'break-all',
+                textDecoration: 'underline',
+              },
+              '& p': { margin: 0 },
+              '& code': {
+                fontFamily:
+                  'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                background: isUser ? '#08223F' : '#F3F6FA',
+                borderRadius: '4px',
+                padding: '0 4px',
+              },
+              '& pre code': {
+                display: 'block',
+                padding: '12px',
+                borderRadius: '8px',
+                overflowX: 'auto',
               },
             }}
           >
-            {message.text}
-          </ReactMarkdown>
-        </Box>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkBreaks, remarkLinkify]}
+              components={{
+                a: ({ href, children, ...props }) => {
+                  const childArray = React.Children.toArray(children);
+                  const firstChild = childArray[0];
 
-        {message.sender === 'AI' && (
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ mt: 1, display: 'flex', alignItems: 'center' }}
-          >
-            <IconButton size="small" onClick={handleCopy}>
-              <ContentCopyIcon fontSize="small" sx={{ color: COLORS.textSecondary }} />
+                  let display;
+                  if (typeof firstChild === 'string') {
+                    const isUrl = firstChild.startsWith('http');
+                    display = isUrl ? 'Xem chi tiết' : firstChild;
+                  } else {
+                    display = firstChild;
+                  }
+
+                  return (
+                    <Tooltip title={href || ''} arrow>
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: COLORS.cyan,
+                          textDecoration: 'underline',
+                          wordBreak: 'break-all',
+                        }}
+                        {...props}
+                      >
+                        {display}
+                      </a>
+                    </Tooltip>
+                  );
+                },
+              }}
+            >
+              {message.text}
+            </ReactMarkdown>
+          </Box>
+
+          {/* ✅ AI actions stay inside the bubble */}
+          {message.sender === 'AI' && (
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ mt: 1, display: 'flex', alignItems: 'center' }}
+            >
+              <IconButton size="small" onClick={handleCopy}>
+                <ContentCopyIcon fontSize="small" sx={{ color: COLORS.textSecondary }} />
+              </IconButton>
+              {/* other AI buttons (regenerate, delete, etc.) */}
+            </Stack>
+          )}
+        </ChatBubble>
+
+        {/* ✅ User copy button floats outside, bottom-right */}
+        {isUser && (
+          <Tooltip title="Copy" arrow>
+            <IconButton
+              size="small"
+              onClick={handleCopy}
+              sx={{
+                position: 'absolute',
+                bottom: -20,
+                right: 0,
+                backgroundColor: 'transparent',
+                boxShadow: 'none',
+                color: COLORS.textSecondary,
+                '&:hover': {
+                  backgroundColor: 'transparent',
+                  color: COLORS.navy,
+                },
+              }}
+            >
+              <ContentCopyIcon fontSize="small" />
             </IconButton>
-          </Stack>
+          </Tooltip>
         )}
-      </ChatBubble>
+      </Box>
     </Box>
   );
 });
