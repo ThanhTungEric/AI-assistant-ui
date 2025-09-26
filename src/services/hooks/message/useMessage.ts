@@ -24,10 +24,7 @@ export const useMessage = (
   selectedTopicId: number | null,
   onNewTopicCreated: (newTopic: Topic) => void
 ): UseMessageReturn => {
-  // Store messages per topic (also key -1 for new chats before backend assigns ID)
-  const [messagesByTopic, setMessagesByTopic] = useState<
-    Record<number, ChatMessage[]>
-  >({});
+  const [messagesByTopic, setMessagesByTopic] = useState<Record<number, ChatMessage[]>>({});
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [justOpenedTopic, setJustOpenedTopic] = useState(false);
@@ -35,15 +32,20 @@ export const useMessage = (
 
   const messageContainerRef = useRef<HTMLDivElement>(null);
 
-  // Track typing per topic
-  const [isTypingByTopic, setIsTypingByTopic] = useState<
-    Record<number, boolean>
-  >({});
-  const isTyping = selectedTopicId
-    ? !!isTypingByTopic[selectedTopicId]
-    : !!isTypingByTopic[-1];
+  // ✅ Track typing sessions per topic
+  const [typingSessions, setTypingSessions] = useState<Record<
+    number,
+    { aiMessage: ChatMessage; startTime: number; speed: number }
+  >>({});
 
-  // Computed messages for the currently selected topic (or temp bucket -1)
+  const isTyping =
+    selectedTopicId !== null
+      ? !!typingSessions[selectedTopicId]
+      : !!typingSessions[-1];
+
+  // ✅ Track if user is near bottom
+  const [isUserNearBottom, setIsUserNearBottom] = useState(true);
+
   const messages =
     selectedTopicId !== null
       ? messagesByTopic[selectedTopicId] ?? []
@@ -74,9 +76,10 @@ export const useMessage = (
 
       setMessagesByTopic((prev) => ({
         ...prev,
-        [selectedTopicId]: currentPage === 1
-          ? normalized
-          : [...normalized, ...(prev[selectedTopicId] ?? [])],
+        [selectedTopicId]:
+          currentPage === 1
+            ? normalized
+            : [...normalized, ...(prev[selectedTopicId] ?? [])],
       }));
 
       setActiveTopicId(selectedTopicId);
@@ -88,7 +91,6 @@ export const useMessage = (
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
-    // if topicId is not yet assigned, we still allow sending
     const topicIdAtSend = selectedTopicId ?? -1;
 
     const tempMessage: ChatMessage = {
@@ -98,7 +100,6 @@ export const useMessage = (
       topicId: topicIdAtSend,
     };
 
-    // put temp message into "current topic" (or temp -1 bucket)
     setMessagesByTopic((prev) => ({
       ...prev,
       [topicIdAtSend]: [...(prev[topicIdAtSend] ?? []), tempMessage],
@@ -127,7 +128,6 @@ export const useMessage = (
         topicId: res.data.aiMessage.topicId,
       };
 
-      // If this was a brand new topic, update the sidebar + selectedTopicId
       if (!selectedTopicId && res.data.userMessage.topicId) {
         const topicFromApi = await getTopicById(res.data.userMessage.topicId);
         if (topicFromApi) {
@@ -135,17 +135,11 @@ export const useMessage = (
         }
       }
 
-      // ✅ make sure we got a real topic id
       const realTopicId: number | undefined = res.data.userMessage.topicId;
       if (!realTopicId) {
         console.error("No topicId returned from backend!");
         return;
       }
-
-      setIsTypingByTopic((prev) => ({
-        ...prev,
-        [realTopicId]: true,
-      }));
 
       setMessagesByTopic((prev) => {
         const tempMsgs = prev[-1] ?? [];
@@ -161,33 +155,21 @@ export const useMessage = (
             userMessage,
             { ...aiMessage, text: "" },
           ],
-          [-1]: [], // clear temp bucket
+          [-1]: [],
         };
       });
 
-      // simulate AI typing
-      let currentText = "";
-      let index = 0;
-      const typingInterval = setInterval(() => {
-        if (index < aiMessage.text.length) {
-          currentText += aiMessage.text[index++];
-          setMessagesByTopic((prev) => ({
-            ...prev,
-            [realTopicId]: (prev[realTopicId] ?? []).map((msg: ChatMessage) =>
-              msg.id === aiMessage.id ? { ...msg, text: currentText } : msg
-            ),
-          }));
-        } else {
-          clearInterval(typingInterval);
-          setIsTypingByTopic((prev) => ({
-            ...prev,
-            [realTopicId]: false,
-          }));
-        }
-      }, 0.1);
+      // ✅ Start typing session with time-based approach
+      setTypingSessions((prev) => ({
+        ...prev,
+        [realTopicId]: {
+          aiMessage,
+          startTime: Date.now(),
+          speed: 30 / 1000, // 30 chars per sec
+        },
+      }));
     } catch (error) {
       console.error("Error sending message:", error);
-      // remove temp on error
       setMessagesByTopic((prev) => ({
         ...prev,
         [topicIdAtSend]: (prev[topicIdAtSend] ?? []).filter(
@@ -201,15 +183,6 @@ export const useMessage = (
     setPage(1);
     setHasMore(true);
     setJustOpenedTopic(true);
-
-    // reset typing for old topic if any
-    if (selectedTopicId) {
-      setIsTypingByTopic((prev) => ({
-        ...prev,
-        [selectedTopicId]: false,
-      }));
-    }
-    // also ensure temp bucket -1 is cleared
     setMessagesByTopic((prev) => ({ ...prev, [-1]: [] }));
   };
 
@@ -218,6 +191,43 @@ export const useMessage = (
       setPage((prev) => prev + 1);
     }
   };
+
+  // ✅ Drive AI typing with requestAnimationFrame
+  useEffect(() => {
+    let raf: number;
+
+    const tick = () => {
+      Object.entries(typingSessions).forEach(([topicId, session]) => {
+        const elapsed = Date.now() - session.startTime;
+        const charsToShow = Math.min(
+          session.aiMessage.text.length,
+          Math.floor(elapsed * session.speed)
+        );
+
+        setMessagesByTopic((prev) => ({
+          ...prev,
+          [Number(topicId)]: (prev[Number(topicId)] ?? []).map((msg) =>
+            msg.id === session.aiMessage.id
+              ? { ...msg, text: session.aiMessage.text.slice(0, charsToShow) }
+              : msg
+          ),
+        }));
+
+        if (charsToShow >= session.aiMessage.text.length) {
+          setTypingSessions((prev) => {
+            const copy = { ...prev };
+            delete copy[Number(topicId)];
+            return copy;
+          });
+        }
+      });
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [typingSessions]);
 
   useEffect(() => {
     setPage(1);
@@ -232,11 +242,18 @@ export const useMessage = (
     if (page > 1) loadMessages(page);
   }, [page]);
 
+  // ✅ Detect user scroll position
   useEffect(() => {
     const container = messageContainerRef.current;
     if (!container) return;
 
     const handleScroll = () => {
+      const threshold = 50;
+      const distanceFromBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight;
+
+      setIsUserNearBottom(distanceFromBottom < threshold);
+
       if (container.scrollTop === 0 && hasMore) {
         loadMoreMessages();
       }
@@ -248,6 +265,16 @@ export const useMessage = (
     };
   }, [hasMore]);
 
+  // ✅ Auto-scroll only when near bottom or just opened topic
+  useEffect(() => {
+    const container = messageContainerRef.current;
+    if (!container) return;
+
+    if (isUserNearBottom || justOpenedTopic) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [messages, justOpenedTopic, isUserNearBottom]);
+
   return {
     messages,
     hasMore,
@@ -256,7 +283,6 @@ export const useMessage = (
     messageContainerRef,
     setMessages: (value: React.SetStateAction<ChatMessage[]>) => {
       const topicId = selectedTopicId ?? -1;
-
       setMessagesByTopic((prev) => {
         const prevArr = prev[topicId] ?? [];
         const newArr =

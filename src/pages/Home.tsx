@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   CssBaseline,
@@ -74,12 +74,11 @@ const Home: React.FC = () => {
     isTyping,
     createNewChat,
     justOpenedTopic,
-    activeTopicId,
     setJustOpenedTopic,
+    activeTopicId,
   }: UseMessageReturn = useMessage(
     selectedTopicId,
     onNewTopicCreated
-    // We do NOT need to pass setIsTypingByTopic anymore!
   );
 
   // User clicks "New Chat"
@@ -146,7 +145,7 @@ const Home: React.FC = () => {
             </IconButton>
           </Box>
 
-          {/* ChatWindow: isTyping comes from hook per-topic */}
+          {/* ChatWindow */}
           <ChatWindow
             messages={messages}
             onSendMessage={sendMessage}
